@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="icone.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <title>Write Study</title>
+</head>
+
+<body>
+    <div class="layout">
+
+        <aside class="sidebar">
+
+            <div class="topo">
+                <img class="icone" src="icone.png">
+                <h3 class="BV">Bem vindo(a)!</h3>
+            </div>
+            <button class="btn" id="adicionarMateria">Adicionar matéria +</button>
+
+
+            <div class="nova-materia" id="novaMateria">
+                <input type="text" id="nomeMateria" placeholder="Nome da matéria">
+
+                <div class="botoes-materia">
+                    <button class="cancelar" id="cancelarMateria">Cancelar</button>
+                    <button class="confirmar-materia" id="confirmarMateria">Adicionar</button>
+                </div>
+            </div>
+
+
+            <div class="lista-materias" id="listaMaterias"></div>
+        </aside>
+
+
+        <main class="conteudo">
+
+            <div class="inicio" id="inicio">
+                <h1 class="criar">Crie algo...</h1>
+                <img class="centroImg" src="centro.png">
+            </div>
+
+            <div class="area-anotacoes" id="areaAnotacoes">
+
+                <div class="painel-anotacoes">
+                    <h2>Minhas anotações</h2>
+
+                    <button id="novaAnotacao">+ Nova anotação</button>
+
+                    <div id="listaAnotacoes"></div>
+                </div>
+
+                <div class="editor-anotacao" id="editorAnotacao">
+                    <p class="mensagem-vazia">
+                        Selecione uma anotação ou crie uma nova.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="area-atividades" id="areaAtividades">
+                <div class="cabecalho-atividades">
+                    <h2>Minhas atividades</h2>
+                    <p>Organize suas tarefas e pratique o que aprendeu.</p>
+                </div>
+
+
+                <div class="modal-tarefa" id="modalExcluirTarefa">
+                    <div class="conteudo-modal-tarefa">
+                        <h3>Excluir atividade?</h3>
+                        <p>Tem certeza de que deseja excluir esta tarefa? Essa ação não poderá ser desfeita.</p>
+
+                        <div class="botoes-modal-tarefa">
+                            <button type="button" id="cancelarExcluirTarefa">
+                                Cancelar
+                            </button>
+                            <button type="button" id="confirmarExcluirTarefa">
+                                Sim, excluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+                <section class="secao-tarefas">
+                    <div class="titulo-secao-atividades">
+                        <div>
+                            <h3>Tarefas e prazos</h3>
+                            <p>Organize suas tarefas, acompanhe seus prazos e marque suas atividades concluídas.</p>
+                        </div>
+
+                        <button id="novaTarefa">+ Nova tarefa</button>
+                    </div>
+
+                    <div class="formulario-tarefa" id="formularioTarefa">
+                        <h4 id="tituloFormularioTarefa">Nova tarefa</h4>
+
+                        <p class="erro-tarefa" id="erroTarefa">
+                            Por favor, informe um título para sua tarefa.
+                        </p>
+
+                        <label for="tituloTarefa">Título <span class="obrigatorio">*</span></label>
+                        <input type="text" id="tituloTarefa" placeholder="Ex.: Lista de exercícios">
+
+                        <label for="descricaoTarefa">Descrição <span class="obrigatorio">*</span></label>
+                        <textarea id="descricaoTarefa" placeholder="Descreva o que precisa ser feito..."
+                            rows="3"></textarea>
+
+                        <label for="prazoTarefa">Prazo (opcional)</label>
+                        <input type="date" id="prazoTarefa">
+
+                        <div class="botoes-tarefa">
+                            <button type="button" id="cancelarTarefa">Cancelar</button>
+                            <button type="button" id="salvarTarefa">Salvar tarefa</button>
+                        </div>
+                    </div>
+
+                    <div id="listaTarefas"></div>
+
+                </section>
+
+
+                <section class="secao-exercicios">
+                    <div class="titulo-secao-exercicios">
+                        <div>
+                            <h3>Exercícios interativos</h3>
+                            <p>Pratique os conteúdos desta matéria com questões e desafios.</p>
+                        </div>
+
+                        <button id="novoExercicio">+ Adicionar exercício</button>
+                    </div>
+
+                    <div class="formulario-exercicio" id="formularioExercicio">
+                        <h4 id="tituloFormularioExercicio">Novo exercício</h4>
+
+                        <p class="erro-exercicio" id="erroExercicio">
+                            Por favor, informe o título e o enunciado da questão.
+                        </p>
+
+                        <label for="tituloExercicio">Título <span class="obrigatorio">*</span></label>
+                        <input type="text" id="tituloExercicio" placeholder="Ex.: Revisão do assunto...">
+
+                        <label for="enunciadoExercicio">Enunciado <span class="obrigatorio">*</span></label>
+                        <textarea id="enunciadoExercicio" placeholder="Digite a pergunta que deseja praticar..."
+                            rows="4"></textarea>
+
+                        <label for="tipoExercicio">Tipo de questão</label>
+                        <select id="tipoExercicio">
+                            <option value="multipla">Múltipla escolha</option>
+                            <option value="verdadeiro-falso">Verdadeiro ou falso</option>
+                            <option value="aberta">Resposta aberta</option>
+                        </select>
+
+                        <div id="camposAlternativas">
+                            <label>Alternativas <span class="obrigatorio">*</span></label>
+
+                            <div class="campo-alternativa">
+                                <input type="text" class="alternativa-exercicio" placeholder="Alternativa A">
+                                <input type="radio" name="gabaritoMultipla" value="A" title="Marcar como correta">
+                            </div>
+
+                            <div class="campo-alternativa">
+                                <input type="text" class="alternativa-exercicio" placeholder="Alternativa B">
+                                <input type="radio" name="gabaritoMultipla" value="B" title="Marcar como correta">
+                            </div>
+
+                            <div class="campo-alternativa">
+                                <input type="text" class="alternativa-exercicio" placeholder="Alternativa C">
+                                <input type="radio" name="gabaritoMultipla" value="C" title="Marcar como correta">
+                            </div>
+
+                            <div class="campo-alternativa">
+                                <input type="text" class="alternativa-exercicio" placeholder="Alternativa D">
+                                <input type="radio" name="gabaritoMultipla" value="D" title="Marcar como correta">
+                            </div>
+                        </div>
+
+                        <div id="alternativasVerdadeiroFalso" style="display: none;">
+                            <label>Selecione a resposta correta <span class="obrigatorio">*</span></label>
+
+                            <div class="opcoes-verdadeiro-falso">
+                                <button type="button" class="opcao-vf" data-valor="Verdadeiro">
+                                    Verdadeiro
+                                </button>
+
+                                <button type="button" class="opcao-vf" data-valor="Falso">
+                                    Falso
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="campoGabarito">
+                            <label for="respostaCorreta">Gabarito / Resposta esperada <span class="obrigatorio">*</span></label>
+                            <textarea id="respostaCorreta" placeholder="Informe a resposta esperada..."
+                                rows="3"></textarea>
+                        </div>
+
+                        <label for="imagemExercicio">Imagem (opcional)</label>
+                        <input type="file" id="imagemExercicio" accept="image/*">
+
+                        <div id="previaImagemExercicio"></div>
+
+                        <div class="botoes-exercicio">
+                            <button type="button" id="cancelarExercicio">Cancelar</button>
+                            <button type="button" id="salvarExercicio">Salvar exercício</button>
+                        </div>
+                    </div>
+
+                    <div id="listaExercicios"></div>
+                </section>
+
+            </div>
+
+
+
+        </main>
+
+
+        <aside class="direita">
+            <div class="bloco">
+                <h2 class="importante">Importante</h2>
+                <textarea class="anotacao" placeholder="09/11: Prova..."></textarea>
+            </div>
+
+        </aside>
+
+    </div>
+
+    <div class="fundo-modal" id="modalConfirmacao">
+        <div class="modal">
+            <div class="icone-apagar">🗑️</div>
+
+            <h2>Apagar matéria?</h2>
+
+            <p>
+                Tem certeza de que deseja apagar esta matéria?
+                Essa ação não poderá ser desfeita.
+            </p>
+
+            <div class="botoes-modal">
+                <button id="cancelarApagar">Cancelar</button>
+                <button id="confirmarApagar">Apagar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="fundo-modal" id="modalExcluirAnotacao">
+        <div class="modal">
+            <div class="icone-apagar">🗑️</div>
+
+            <h2>Apagar anotação?</h2>
+
+            <p>Tem certeza de que deseja apagar esta anotação?</p>
+
+            <div class="botoes-modal">
+                <button id="cancelarExcluirAnotacao">Cancelar</button>
+                <button id="confirmarExcluirAnotacao">Apagar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+
+</html>

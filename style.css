@@ -1,0 +1,1347 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    text-align: center;
+    width: 250px;
+    background-color: #FFDEAD;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.topo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icone {
+    height: 45px;
+    width: 45px;
+    margin-left: 15px;
+}
+
+.BV {
+    font-family: "Caveat", cursive;
+    font-size: 22px;
+}
+
+
+.btn {
+    padding: 12px 16px;
+    background: #338afb;
+    border-radius: 30px;
+    font-weight: 600;
+    color: rgb(250, 252, 253);
+    border: none;
+    transition: transform 0.1s;
+    align-self: center;
+}
+
+.btn:active {
+    transform: scale(0.96);
+}
+
+
+.nova-materia {
+    display: none;
+    margin-top: 10px;
+    padding: 0 10px;
+}
+
+.nova-materia input {
+    box-sizing: border-box;
+    padding: 9px;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+}
+
+.botoes-materia {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.botoes-materia button {
+    border: none;
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.cancelar {
+    background-color: #f1e5d7;
+    color: #62584d;
+}
+
+.confirmar-materia {
+    background-color: #338afb;
+    color: white;
+}
+
+.confirmar-materia:hover {
+    background-color: #2475df;
+}
+
+
+.lista-materias {
+    flex: 1;
+    overflow-y: auto;
+    width: 100%;
+    min-height: 0;
+}
+
+
+.materia-item {
+    width: 190px;
+    margin: 8px auto;
+    background-color: #fff;
+    border-radius: 12px;
+    font-family: "Caveat", cursive;
+    font-size: 19px;
+    overflow: hidden;
+}
+
+.cabecalho-materia {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    min-height: 40px;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.nome-materia {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.seta-materia {
+    flex-shrink: 0;
+    color: #999;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    line-height: 1;
+    letter-spacing: -2px;
+}
+
+.apagar-materia {
+    flex-shrink: 0;
+    border: none;
+    background: none;
+    color: #999;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.apagar-materia:hover {
+    color: #e57373;
+}
+
+.submenu-materia {
+    display: none;
+    padding: 0 10px 10px;
+}
+
+.submenu-materia.aberto {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.opcao-materia {
+    border: none;
+    border-radius: 7px;
+    background-color: #fff3df;
+    padding: 7px 10px;
+    text-align: left;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #555;
+    cursor: pointer;
+}
+
+.opcao-materia:hover {
+    background-color: #ffe2b5;
+}
+
+
+
+
+
+.lista-materias::-webkit-scrollbar {
+    width: 6px;
+}
+
+.lista-materias::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.lista-materias::-webkit-scrollbar-thumb {
+    background: #f5a623;
+    border-radius: 10px;
+}
+
+.conteudo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+}
+
+
+.criar {
+    opacity: 0.3;
+    font-family: "Caveat", cursive;
+    font-size: 42px;
+    color: #555;
+}
+
+
+.centroImg {
+    height: 450px;
+    width: 450px;
+}
+
+.direita {
+    background-color: #FFDEAD;
+    width: 280px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.bloco {
+    margin-top: 30px;
+    background-color: rgb(254, 254, 254);
+    box-shadow: 5px 5px 0px #f5a623;
+}
+
+.anotacao {
+    padding: 10px;
+    box-sizing: border-box;
+    width: 230px;
+    height: 150px;
+    resize: none;
+    border: none;
+    outline: none;
+}
+
+
+.importante {
+    margin: 10px 0 5px 0;
+    text-align: center;
+    font-family: "Caveat", cursive;
+    font-size: 28px;
+}
+
+
+.fundo-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.35);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background-color: #fff;
+    width: 320px;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+.icone-apagar {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.modal h2 {
+    margin: 5px 0 10px;
+    color: #39332c;
+}
+
+.modal p {
+    color: #777;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.botoes-modal {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.botoes-modal button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#cancelarApagar {
+    background-color: white;
+    border: 1px solid #ddd;
+    color: #555;
+}
+
+#confirmarApagar {
+    background-color: #e57373;
+    border: none;
+    color: white;
+}
+
+#cancelarApagar:hover {
+    background-color: #f5f5f5;
+}
+
+#confirmarApagar:hover {
+    background-color: #d85d5d;
+}
+
+
+/* Tela inicial */
+.inicio {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Área de anotações */
+.area-anotacoes {
+    display: none;
+    flex-direction: column;
+    width: 90%;
+    height: 90vh;
+    box-sizing: border-box;
+    padding: 25px;
+    gap: 15px;
+}
+
+.area-anotacoes h1 {
+    margin: 0;
+    color: #555;
+    font-family: "Caveat", cursive;
+    font-size: 32px;
+}
+
+.titulo-anotacoes {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: none;
+    border-bottom: 2px solid #FFDEAD;
+    outline: none;
+    font-family: "Caveat", cursive;
+    font-size: 24px;
+}
+
+.texto-anotacoes {
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    outline: none;
+    resize: none;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #444;
+}
+
+.texto-anotacoes:focus,
+.titulo-anotacoes:focus {
+    border-color: #f5a623;
+}
+
+
+/* Área geral das anotações */
+.area-anotacoes {
+    display: none;
+    flex-direction: row;
+    width: 100%;
+    height: 100vh;
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* Lista lateral de anotações */
+.painel-anotacoes {
+    width: 210px;
+    min-width: 170px;
+    padding: 20px 12px;
+    box-sizing: border-box;
+    background-color: #fffaf2;
+    border-right: 1px solid #eee2d1;
+    overflow-y: auto;
+}
+
+.painel-anotacoes h2 {
+    margin: 0 0 18px;
+    font-family: "Caveat", cursive;
+    font-size: 25px;
+    color: #555;
+}
+
+#novaAnotacao {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 9px;
+    background-color: #338afb;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#novaAnotacao:hover {
+    background-color: #2475df;
+}
+
+#listaAnotacoes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.item-anotacao {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 9px;
+    border-radius: 9px;
+    background-color: white;
+    border: 1px solid #eee2d1;
+}
+
+.item-anotacao.selecionada {
+    background-color: #fff0d9;
+    border-color: #f5a623;
+}
+
+.selecionar-anotacao {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    text-align: left;
+    color: #555;
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.apagar-anotacao {
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    color: #999;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.apagar-anotacao:hover {
+    color: #e57373;
+}
+
+/* Editor */
+.editor-anotacao {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    padding: 25px;
+    gap: 15px;
+    box-sizing: border-box;
+}
+
+.titulo-anotacao-editor {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: none;
+    border-bottom: 2px solid #FFDEAD;
+    outline: none;
+    font-family: "Caveat", cursive;
+    font-size: 28px;
+}
+
+.conteudo-anotacao-editor {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    outline: none;
+    resize: none;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #444;
+}
+
+.titulo-anotacao-editor:focus,
+.conteudo-anotacao-editor:focus {
+    border-color: #f5a623;
+}
+
+.mensagem-vazia {
+    margin: auto;
+    color: #999;
+    text-align: center;
+}
+
+
+
+/* Barras de rolagem personalizadas */
+.painel-anotacoes,
+#listaAnotacoes,
+.conteudo-anotacao-editor,
+.texto-anotacoes,
+.lista-materias {
+    scrollbar-width: thin;
+    scrollbar-color: #e8b66f transparent;
+}
+
+/* Chrome, Edge e outros navegadores baseados em Chromium */
+.painel-anotacoes::-webkit-scrollbar,
+#listaAnotacoes::-webkit-scrollbar,
+.conteudo-anotacao-editor::-webkit-scrollbar,
+.texto-anotacoes::-webkit-scrollbar,
+.lista-materias::-webkit-scrollbar {
+    width: 5px;
+}
+
+.painel-anotacoes::-webkit-scrollbar-track,
+#listaAnotacoes::-webkit-scrollbar-track,
+.conteudo-anotacao-editor::-webkit-scrollbar-track,
+.texto-anotacoes::-webkit-scrollbar-track,
+.lista-materias::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.painel-anotacoes::-webkit-scrollbar-thumb,
+#listaAnotacoes::-webkit-scrollbar-thumb,
+.conteudo-anotacao-editor::-webkit-scrollbar-thumb,
+.texto-anotacoes::-webkit-scrollbar-thumb,
+.lista-materias::-webkit-scrollbar-thumb {
+    background-color: #e8b66f;
+    border-radius: 10px;
+}
+
+.painel-anotacoes::-webkit-scrollbar-thumb:hover,
+#listaAnotacoes::-webkit-scrollbar-thumb:hover,
+.conteudo-anotacao-editor::-webkit-scrollbar-thumb:hover,
+.texto-anotacoes::-webkit-scrollbar-thumb:hover,
+.lista-materias::-webkit-scrollbar-thumb:hover {
+    background-color: #d99a3d;
+}
+
+
+/* Barra de ferramentas das anotações */
+.barra-ferramentas {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    flex-wrap: wrap;
+}
+
+.botao-ferramenta {
+    width: 36px;
+    height: 34px;
+    border: 1px solid #e5d8c6;
+    border-radius: 7px;
+    background-color: #fffaf2;
+    color: #514638;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.botao-ferramenta:hover {
+    background-color: #ffedcf;
+}
+
+.botao-ferramenta:active {
+    background-color: #f8dcae;
+}
+
+/* Área de escrita com formatação */
+.conteudo-anotacao-editor {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    padding: 15px;
+    border: 1px solid #e5d8c6;
+    border-radius: 10px;
+    background-color: #fff;
+    color: #333;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-y: auto;
+    outline: none;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.conteudo-anotacao-editor:focus {
+    border-color: #d9ad70;
+}
+
+.conteudo-anotacao-editor:empty::before {
+    content: attr(data-placeholder);
+    color: #aaa;
+    pointer-events: none;
+}
+
+
+.area-atividades {
+    display: none;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    height: 100vh;
+    min-width: 0;
+    padding: 25px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.cabecalho-atividades h2 {
+    margin: 0;
+    color: #555;
+    font-family: "Caveat", cursive;
+    font-size: 32px;
+}
+
+
+.secao-tarefas,
+.secao-exercicios {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 3px 3px 0 #f5a623;
+}
+
+
+
+.secao-tarefas h3,
+.secao-exercicios h3 {
+    margin: 0;
+    color: #555;
+    font-family: "Caveat", cursive;
+    font-size: 25px;
+}
+
+
+/* CABEÇALHOS DAS SEÇÕES */
+
+.titulo-secao-atividades,
+.titulo-secao-exercicios {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.titulo-secao-atividades h3,
+.titulo-secao-exercicios h3 {
+    margin: 0;
+}
+
+.titulo-secao-atividades p,
+.titulo-secao-exercicios p {
+    margin: 6px 0 0;
+    color: #514638;
+    font-size: 16px;
+    font-weight: normal;
+    font-family: inherit;
+}
+
+/* CABEÇALHOS DAS SEÇÕES */
+
+.titulo-secao-atividades,
+.titulo-secao-exercicios {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.titulo-secao-atividades h3,
+.titulo-secao-exercicios h3 {
+    margin: 0;
+}
+
+.titulo-secao-atividades p,
+.titulo-secao-exercicios p {
+    margin: 6px 0 0;
+    color: #666;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: normal;
+    line-height: 1.4;
+}
+
+/* BOTÕES DAS SEÇÕES */
+
+.titulo-secao-atividades button,
+.titulo-secao-exercicios button {
+    width: 150px;
+    height: 38px;
+    padding: 9px 10px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    background-color: #f5a623;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: normal;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+
+
+#listaTarefas,
+#listaExercicios {
+    margin-top: 16px;
+}
+
+
+.formulario-tarefa {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 18px;
+    background-color: #fffaf2;
+    border: 1px solid #f0dfc7;
+    border-radius: 10px;
+}
+
+.formulario-tarefa h4 {
+    margin: 0 0 5px;
+    color: #555;
+    font-family: "Caveat", cursive;
+    font-size: 24px;
+}
+
+.formulario-exercicio h4 {
+    margin: 0 0 5px;
+    color: #555;
+    font-family: "Caveat", cursive;
+    font-size: 24px;
+}
+
+.formulario-tarefa label {
+    color: #514638;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.formulario-tarefa input,
+.formulario-tarefa textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid #e5d8c6;
+    border-radius: 7px;
+    background-color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.formulario-tarefa textarea {
+    resize: vertical;
+}
+
+.botoes-tarefa {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.botoes-tarefa button {
+    padding: 9px 12px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+#cancelarTarefa {
+    background-color: #eee5d9;
+    color: #514638;
+}
+
+#salvarTarefa {
+    background-color: #f5a623;
+    color: #333;
+}
+
+
+.item-tarefa {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    background-color: #fff1ed;
+    border: 1px solid #f0d2c9;
+    border-left: 4px solid #d99585;
+    border-radius: 9px;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.item-tarefa input[type="checkbox"] {
+    margin-top: 5px;
+    accent-color: #f5a623;
+    cursor: pointer;
+}
+
+.conteudo-tarefa {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.conteudo-tarefa h4 {
+    margin: 0 0 6px;
+    color: #514638;
+    font-size: 16px;
+}
+
+.conteudo-tarefa p {
+    margin: 0 0 8px;
+    color: #666;
+    white-space: pre-wrap;
+}
+
+.conteudo-tarefa small {
+    color: #8a6b45;
+}
+
+.tarefa-concluida {
+    background-color: #f0f7ec;
+    border-color: #d2e4c9;
+    border-left-color: #83a878;
+}
+
+.tarefa-concluida .conteudo-tarefa {
+    color: #4f6749;
+}
+
+.tarefa-concluida .conteudo-tarefa h4 {
+    text-decoration: none;
+}
+
+.prazo-tarefa {
+    display: inline-block;
+    margin-top: 9px;
+    padding: 5px 9px;
+    background-color: #ffdfd5;
+    color: #a65342;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.tarefa-concluida .prazo-tarefa {
+    background-color: #dcebd5;
+    color: #507647;
+}
+
+
+.apagar-tarefa {
+    border: none;
+    background: transparent;
+    color: #b65342;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+
+/* FORMULÁRIO DE EXERCÍCIOS */
+
+.formulario-exercicio {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 18px;
+    background-color: #fffaf2;
+    border: 1px solid #f0dfc7;
+    border-radius: 10px;
+}
+
+#camposAlternativas {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#camposAlternativas label {
+    margin-bottom: 4px;
+}
+
+.formulario-exercicio input,
+.formulario-exercicio textarea,
+.formulario-exercicio select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid #e5d8c6;
+    border-radius: 8px;
+    background-color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.formulario-exercicio input[type="file"] {
+    padding: 7px;
+    background-color: #fff;
+    color: #514638;
+    cursor: pointer;
+}
+
+.formulario-exercicio input[type="file"]::file-selector-button {
+    padding: 7px 12px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 6px;
+    background-color: #ffedcf;
+    color: #514638;
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+}
+
+.formulario-exercicio select {
+    cursor: pointer;
+    color: #514638;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23514638' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.formulario-exercicio label {
+    display: block;
+    color: #514638;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.formulario-exercicio textarea {
+    resize: none;
+    min-height: 110px;
+}
+
+.formulario-exercicio input:focus,
+.formulario-exercicio textarea:focus,
+.formulario-exercicio select:focus {
+    outline: none;
+    border-color: #d9ad70;
+    box-shadow: 0 0 0 2px #f5e7d2;
+}
+
+.botoes-exercicio {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.botoes-exercicio button {
+    padding: 9px 14px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.botoes-exercicio button:last-child {
+    background-color: #f5a623;
+    color: #333;
+}
+
+#cancelarExercicio {
+    background-color: #eee5d9;
+    color: #514638;
+}
+
+#salvarExercicio {
+    background-color: #f5a623;
+    color: #333;
+}
+
+
+
+
+/* MENSAGEM DE ERRO */
+
+.erro-exercicio {
+    display: none;
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background-color: #fff0e8;
+    color: #a6533d;
+    border: 1px solid #f0d0c2;
+    font-size: 13px;
+}
+
+.erro-exercicio.visivel {
+    display: block;
+}
+
+/* PRÉVIA DA IMAGEM */
+
+#previaImagemExercicio img {
+    max-width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid #f0dfc7;
+}
+
+
+/* Barra de rolagem da área de atividades */
+.area-atividades {
+    scrollbar-width: thin;
+    scrollbar-color: #e5b66f transparent;
+}
+
+.area-atividades::-webkit-scrollbar {
+    width: 6px;
+}
+
+.area-atividades::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.area-atividades::-webkit-scrollbar-thumb {
+    background-color: #e5b66f;
+    border-radius: 10px;
+}
+
+.area-atividades::-webkit-scrollbar-thumb:hover {
+    background-color: #d99a42;
+}
+
+
+/* Campos do formulário de tarefas */
+.formulario-tarefa input,
+.formulario-tarefa textarea {
+    border: 1px solid #e5d8c6;
+    border-radius: 8px;
+    outline: none;
+    box-shadow: none;
+    background-color: #fff;
+    color: #514638;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+/* Destaque suave ao selecionar um campo */
+.formulario-tarefa input:focus,
+.formulario-tarefa textarea:focus {
+    border-color: #e5b66f;
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(229 182 111 / 15%);
+}
+
+/* Descrição: sem redimensionamento manual */
+
+.formulario-tarefa textarea {
+    resize: none;
+    overflow-y: auto;
+    min-height: 110px;
+    scrollbar-width: thin;
+    scrollbar-color: #e5b66f transparent;
+}
+
+
+/* Barra de rolagem da descrição */
+.formulario-tarefa textarea::-webkit-scrollbar {
+    width: 5px;
+}
+
+.formulario-tarefa textarea::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.formulario-tarefa textarea::-webkit-scrollbar-thumb {
+    background-color: #e5b66f;
+    border-radius: 10px;
+}
+
+.editar-tarefa {
+    border: none;
+    background: transparent;
+    font-size: 17px;
+    cursor: pointer;
+    padding: 3px;
+    opacity: 0.8;
+}
+
+.editar-tarefa:hover {
+    opacity: 1;
+}
+
+.erro-tarefa {
+    display: none;
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background-color: #fff0e8;
+    color: #a6533d;
+    border: 1px solid #f0d0c2;
+    font-size: 13px;
+}
+
+.erro-tarefa.visivel {
+    display: block;
+}
+
+
+.modal-tarefa {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: rgb(0 0 0 / 35%);
+}
+
+.conteudo-modal-tarefa {
+    width: 100%;
+    max-width: 380px;
+    padding: 24px;
+    box-sizing: border-box;
+    background-color: #fffaf2;
+    border: 1px solid #f0dfc7;
+    border-radius: 14px;
+    box-shadow: 4px 4px 0 #f5a623;
+}
+
+.conteudo-modal-tarefa h3 {
+    margin: 0 0 10px;
+    color: #514638;
+    font-family: "Caveat", cursive;
+    font-size: 28px;
+}
+
+.conteudo-modal-tarefa p {
+    margin: 0;
+    color: #666;
+    line-height: 1.5;
+}
+
+.botoes-modal-tarefa {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+}
+
+.botoes-modal-tarefa button {
+    padding: 9px 12px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+#cancelarExcluirTarefa {
+    background-color: #eee5d9;
+    color: #514638;
+}
+
+#confirmarExcluirTarefa {
+    background-color: #b65342;
+    color: white;
+}
+
+#alternativasVerdadeiroFalso {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.opcao-verdadeiro-falso {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    background-color: #fff;
+    border: 1px solid #e5d8c6;
+    border-radius: 8px;
+    color: #514638;
+    text-align: left;
+    cursor: default;
+}
+
+.opcao-verdadeiro-falso input {
+    flex: 0 0 auto;
+    margin: 0;
+    accent-color: #f5a623;
+}
+
+.opcoes-verdadeiro-falso {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.opcao-vf {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e5d8c6;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #514638;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    text-align: left;
+    cursor: pointer;
+}
+
+/* Destaque das opções verdadeiro e falso */
+.opcao-vf[data-valor="Verdadeiro"] {
+    color: #5b9568;
+    font-weight: bold;
+}
+
+.opcao-vf[data-valor="Falso"] {
+    color: #c56b6b;
+    font-weight: bold;
+}
+
+/* Manter o destaque da opção selecionada */
+.opcao-vf.selecionado {
+    background-color: #ffedcf;
+    border: 1px solid #f5a623;
+}
+
+.campo-alternativa {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.campo-alternativa .alternativa-exercicio {
+    flex: 1;
+    min-width: 0;
+}
+
+.campo-alternativa input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin: 0 5px;
+    accent-color: #f5a623;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.campo-alternativa input[type="radio"]:checked {
+    accent-color: #65a875;
+}
+
+.campo-alternativa:has(input[type="radio"]:checked)::after {
+    content: "✓ Correta";
+    color: #65a875;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.obrigatorio {
+    color: #d9534f;
+    font-weight: bold;
+}
+
+#campoGabarito {
+    display: none;
+}
+
+.card-exercicio {
+    background-color: #ffffff;
+    border: 1px solid #e8dfd3;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 15px;
+}
+
+.card-exercicio button {
+    background-color: #fff3df;
+    color: #9b682b;
+    border: 1px solid #f0d9b5;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.card-exercicio button:hover {
+    background-color: #ffe8c5;
+}
