@@ -309,23 +309,35 @@ body {
     cursor: pointer;
 }
 
-#cancelarApagar {
+#cancelarApagar,
+#cancelarExcluirAnotacao,
+#cancelarExcluirExercicio,
+#cancelarExcluirTarefa {
     background-color: white;
     border: 1px solid #ddd;
     color: #555;
 }
 
-#confirmarApagar {
+#confirmarApagar,
+#confirmarExcluirAnotacao,
+#confirmarExcluirExercicio,
+#confirmarExcluirTarefa {
     background-color: #e57373;
     border: none;
     color: white;
 }
 
-#cancelarApagar:hover {
+#cancelarApagar:hover,
+#cancelarExcluirAnotacao:hover,
+#cancelarExcluirExercicio:hover,
+#cancelarExcluirTarefa:hover {
     background-color: #f5f5f5;
 }
 
-#confirmarApagar:hover {
+#confirmarApagar:hover,
+#confirmarExcluirAnotacao:hover,
+#confirmarExcluirExercicio:hover,
+#confirmarExcluirTarefa:hover {
     background-color: #d85d5d;
 }
 
@@ -1198,23 +1210,6 @@ body {
     margin-top: 22px;
 }
 
-.botoes-modal-tarefa button {
-    padding: 9px 12px;
-    border: none;
-    border-radius: 7px;
-    cursor: pointer;
-}
-
-#cancelarExcluirTarefa {
-    background-color: #eee5d9;
-    color: #514638;
-}
-
-#confirmarExcluirTarefa {
-    background-color: #b65342;
-    color: white;
-}
-
 #alternativasVerdadeiroFalso {
     display: flex;
     flex-direction: column;
@@ -1329,8 +1324,95 @@ body {
     border-radius: 12px;
     padding: 18px;
     margin-bottom: 15px;
+    position: relative;
 }
 
+.area-resposta-exercicio {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.alternativas-resposta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.alternativas-resposta label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.campo-resposta-aberta {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.resultado-resposta {
+    margin: 0;
+    font-weight: 600;
+}
+
+.resultado-resposta.resposta-correta {
+    color: #388e5a;
+    background-color: #e8f5ec;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.resultado-resposta.resposta-incorreta {
+    color: #c65b5b;
+    background-color: #fceaea;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.mensagem-orientacao {
+    color: #999;
+    background-color: transparent;
+    font-size: 13px;
+    font-weight: 400;
+    padding: 0;
+}
+
+.area-resposta-exercicio button {
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: #e9a36f;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.area-resposta-exercicio button:hover {
+    background-color: #d88950;
+}
+
+.card-exercicio button[title="Editar exercício"],
+.card-exercicio button[title="Excluir exercício"] {
+    position: absolute;
+    top: 12px;
+    margin-top: 0;
+}
+
+.card-exercicio button[title="Editar exercício"] {
+    right: 65px;
+}
+
+.card-exercicio button[title="Excluir exercício"] {
+    right: 12px;
+}
 .card-exercicio button {
     background-color: #fff3df;
     color: #9b682b;
@@ -1344,4 +1426,13 @@ body {
 
 .card-exercicio button:hover {
     background-color: #ffe8c5;
+}
+
+.imagem-exercicio-card {
+    max-width: 100%;
+    max-height: 280px;
+    object-fit: contain;
+    border-radius: 10px;
+    display: block;
+    margin: 12px 0;
 }
