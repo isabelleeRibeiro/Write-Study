@@ -73,18 +73,20 @@
                 </div>
 
 
-                <div class="modal-tarefa" id="modalExcluirTarefa">
-                    <div class="conteudo-modal-tarefa">
-                        <h3>Excluir atividade?</h3>
-                        <p>Tem certeza de que deseja excluir esta tarefa? Essa ação não poderá ser desfeita.</p>
+                <div class="fundo-modal" id="modalExcluirTarefa">
+                    <div class="modal">
+                        <div class="icone-apagar">🗑️</div>
 
-                        <div class="botoes-modal-tarefa">
-                            <button type="button" id="cancelarExcluirTarefa">
-                                Cancelar
-                            </button>
-                            <button type="button" id="confirmarExcluirTarefa">
-                                Sim, excluir
-                            </button>
+                        <h2>Apagar tarefa?</h2>
+
+                        <p>
+                            Tem certeza de que deseja apagar esta tarefa?
+                            Essa ação não poderá ser desfeita.
+                        </p>
+
+                        <div class="botoes-modal">
+                            <button type="button" id="cancelarExcluirTarefa">Cancelar</button>
+                            <button type="button" id="confirmarExcluirTarefa">Apagar</button>
                         </div>
                     </div>
                 </div>
@@ -152,7 +154,7 @@
                         <textarea id="enunciadoExercicio" placeholder="Digite a pergunta que deseja praticar..."
                             rows="4"></textarea>
 
-                        <label for="tipoExercicio">Tipo de questão</label>
+                        <label for="tipoExercicio">Tipo de questão <span class="obrigatorio">*</span></label>
                         <select id="tipoExercicio">
                             <option value="multipla">Múltipla escolha</option>
                             <option value="verdadeiro-falso">Verdadeiro ou falso</option>
@@ -198,7 +200,8 @@
                         </div>
 
                         <div id="campoGabarito">
-                            <label for="respostaCorreta">Gabarito / Resposta esperada <span class="obrigatorio">*</span></label>
+                            <label for="respostaCorreta">Gabarito / Resposta esperada <span
+                                    class="obrigatorio">*</span></label>
                             <textarea id="respostaCorreta" placeholder="Informe a resposta esperada..."
                                 rows="3"></textarea>
                         </div>
@@ -264,6 +267,24 @@
             <div class="botoes-modal">
                 <button id="cancelarExcluirAnotacao">Cancelar</button>
                 <button id="confirmarExcluirAnotacao">Apagar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="fundo-modal" id="modalExcluirExercicio">
+        <div class="modal">
+            <div class="icone-apagar">🗑️</div>
+
+            <h2>Apagar exercício?</h2>
+
+            <p>
+                Tem certeza de que deseja apagar este exercício?
+                Essa ação não poderá ser desfeita.
+            </p>
+
+            <div class="botoes-modal">
+                <button type="button" id="cancelarExcluirExercicio">Cancelar</button>
+                <button type="button" id="confirmarExcluirExercicio">Apagar</button>
             </div>
         </div>
     </div>
