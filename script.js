@@ -39,7 +39,6 @@ const confirmarExcluirTarefa = document.getElementById("confirmarExcluirTarefa")
 
 const tituloFormularioTarefa = document.getElementById("tituloFormularioTarefa");
 
-
 // Elementos dos exercícios
 const formularioExercicio = document.getElementById("formularioExercicio");
 const botaoNovoExercicio = document.getElementById("novoExercicio");
@@ -60,6 +59,10 @@ const alternativasVerdadeiroFalso = document.getElementById("alternativasVerdade
 
 const campoGabarito = document.getElementById("campoGabarito");
 
+const modalExcluirExercicio = document.getElementById("modalExcluirExercicio");
+const cancelarExcluirExercicio = document.getElementById("cancelarExcluirExercicio");
+const confirmarExcluirExercicio = document.getElementById("confirmarExcluirExercicio");
+
 let tarefaParaApagar = null;
 let materiaDaTarefaParaApagar = null;
 
@@ -71,6 +74,10 @@ let materiaParaApagar = null;
 
 let tarefaEmEdicao = null;
 let exercicioEmEdicao = null;
+
+let exercicioParaExcluir = null;
+
+let imagemExercicioAtual = null;
 
 // Abre o campo para adicionar uma matéria
 botao.addEventListener("click", function () {
@@ -761,6 +768,35 @@ botaoNovoExercicio.addEventListener("click", function () {
     formularioExercicio.style.display = "flex";
 });
 
+// Prévia da imagem do exercício
+imagemExercicio.addEventListener("change", function () {
+    previaImagemExercicio.innerHTML = "";
+
+    const arquivo = imagemExercicio.files[0];
+
+    if (!arquivo) return;
+
+    if (!arquivo.type.startsWith("image/")) {
+        alert("Selecione um arquivo de imagem.");
+        imagemExercicio.value = "";
+        return;
+    }
+
+    const leitor = new FileReader();
+
+    leitor.onload = function () {
+        imagemExercicioAtual = leitor.result;
+
+        const imagem = document.createElement("img");
+        imagem.src = imagemExercicioAtual;
+        imagem.classList.add("imagem-previa-exercicio");
+
+        previaImagemExercicio.appendChild(imagem);
+    };
+
+    leitor.readAsDataURL(arquivo);
+});
+
 // Cancelar cadastro de exercício
 cancelarExercicio.addEventListener("click", function () {
     formularioExercicio.style.display = "none";
@@ -794,21 +830,193 @@ function renderizarExercicios() {
         const enunciado = document.createElement("p");
         enunciado.textContent = exercicio.enunciado;
 
-        card.appendChild(titulo);
-        card.appendChild(enunciado);
+        const areaResposta = document.createElement("div");
+        areaResposta.classList.add("area-resposta-exercicio");
 
-        if (exercicio.alternativas && exercicio.tipo === "multipla") {
+        card.appendChild(titulo);
+
+        if (exercicio.imagem) {
+            const imagem = document.createElement("img");
+            imagem.src = exercicio.imagem;
+            imagem.classList.add("imagem-exercicio-card");
+
+            card.appendChild(imagem);
+        }
+
+        card.appendChild(enunciado);
+        card.appendChild(areaResposta);
+
+        if (exercicio.tipo === "multipla") {
+            const alternativasResposta = document.createElement("div");
+            alternativasResposta.classList.add("alternativas-resposta");
+
             exercicio.alternativas.forEach(function (alternativa, indice) {
                 if (alternativa) {
-                    const opcao = document.createElement("p");
-                    opcao.textContent = `${String.fromCharCode(65 + indice)}) ${alternativa}`;
-                    card.appendChild(opcao);
+                    const opcao = document.createElement("label");
+                    const radio = document.createElement("input");
+
+                    radio.type = "radio";
+                    radio.name = `resposta-${materiaAtual.exercicios.indexOf(exercicio)}`;
+                    radio.value = String.fromCharCode(65 + indice);
+
+                    opcao.appendChild(radio);
+                    opcao.appendChild(document.createTextNode(
+                        ` ${String.fromCharCode(65 + indice)}) ${alternativa}`
+                    ));
+
+                    alternativasResposta.appendChild(opcao);
                 }
             });
+
+            areaResposta.appendChild(alternativasResposta);
+            const verificar = document.createElement("button");
+            verificar.type = "button";
+            verificar.textContent = "Verificar sua resposta";
+
+            const resultado = document.createElement("p");
+            resultado.classList.add("resultado-resposta");
+
+            verificar.addEventListener("click", function () {
+                const selecionada = alternativasResposta.querySelector(
+                    'input[type="radio"]:checked'
+                );
+
+                if (!selecionada) {
+                    resultado.textContent = "Selecione uma alternativa primeiro.";
+                    resultado.classList.add("mensagem-orientacao");
+
+                    setTimeout(function () {
+                        resultado.textContent = "";
+                        resultado.classList.remove("mensagem-orientacao");
+                    }, 3000);
+
+                    return;
+                }
+
+                if (selecionada.value === exercicio.resposta) {
+                    resultado.textContent = "Parabéns! Você acertou!";
+                    resultado.classList.remove("resposta-incorreta");
+                    resultado.classList.add("resposta-correta");
+                } else {
+                    resultado.textContent = "Não foi dessa vez. Tente novamente!";
+                    resultado.classList.remove("resposta-correta");
+                    resultado.classList.add("resposta-incorreta");
+                }
+
+                setTimeout(function () {
+                    resultado.textContent = "";
+                    resultado.classList.remove("resposta-correta", "resposta-incorreta");
+                }, 3000);
+            });
+
+            areaResposta.appendChild(verificar);
+            areaResposta.appendChild(resultado);
+        }
+
+        if (exercicio.tipo === "verdadeiro-falso") {
+            const alternativasVF = document.createElement("div");
+            alternativasVF.classList.add("alternativas-resposta");
+
+            ["Verdadeiro", "Falso"].forEach(function (valor) {
+                const opcao = document.createElement("label");
+                const radio = document.createElement("input");
+
+                radio.type = "radio";
+                radio.name = `resposta-vf-${materiaAtual.exercicios.indexOf(exercicio)}`;
+                radio.value = valor;
+
+                opcao.appendChild(radio);
+                opcao.appendChild(document.createTextNode(` ${valor}`));
+
+                alternativasVF.appendChild(opcao);
+            });
+
+            const verificar = document.createElement("button");
+            verificar.type = "button";
+            verificar.textContent = "Verificar resposta";
+
+            const resultado = document.createElement("p");
+            resultado.classList.add("resultado-resposta");
+
+            verificar.addEventListener("click", function () {
+                const selecionada = alternativasVF.querySelector(
+                    'input[type="radio"]:checked'
+                );
+
+                if (!selecionada) {
+                    resultado.textContent = "Selecione uma alternativa primeiro.";
+                    resultado.classList.add("mensagem-orientacao");
+
+                    setTimeout(function () {
+                        resultado.textContent = "";
+                        resultado.classList.remove("mensagem-orientacao");
+                    }, 3000);
+
+                    return;
+                }
+
+                if (selecionada.value === exercicio.resposta) {
+                    resultado.textContent = "Parabéns! Você acertou!";
+                    resultado.classList.remove("resposta-incorreta");
+                    resultado.classList.add("resposta-correta");
+                } else {
+                    resultado.textContent = "Não foi dessa vez. Tente novamente!";
+                    resultado.classList.remove("resposta-correta");
+                    resultado.classList.add("resposta-incorreta");
+                }
+
+                setTimeout(function () {
+                    resultado.textContent = "";
+                    resultado.classList.remove("resposta-correta", "resposta-incorreta");
+                }, 3000);
+            });
+
+            areaResposta.appendChild(alternativasVF);
+            areaResposta.appendChild(verificar);
+            areaResposta.appendChild(resultado);
+        }
+
+        if (exercicio.tipo === "aberta") {
+            const campoResposta = document.createElement("textarea");
+            campoResposta.placeholder = "Digite sua resposta...";
+            campoResposta.classList.add("campo-resposta-aberta");
+
+            const verificar = document.createElement("button");
+            verificar.type = "button";
+            verificar.textContent = "Enviar resposta";
+
+            const resultado = document.createElement("p");
+            resultado.classList.add("resultado-resposta");
+
+            verificar.addEventListener("click", function () {
+                if (!campoResposta.value.trim()) {
+                    resultado.textContent = "Digite sua resposta primeiro.";
+                    resultado.classList.add("mensagem-orientacao");
+
+                    setTimeout(function () {
+                        resultado.textContent = "";
+                        resultado.classList.remove("mensagem-orientacao");
+                    }, 3000);
+
+                    return;
+                }
+
+                resultado.textContent = "Resposta registrada! Consulte o gabarito para comparar.";
+                resultado.classList.add("mensagem-orientacao");
+
+                setTimeout(function () {
+                    resultado.textContent = "";
+                    resultado.classList.remove("mensagem-orientacao");
+                }, 4000);
+            });
+
+            areaResposta.appendChild(campoResposta);
+            areaResposta.appendChild(verificar);
+            areaResposta.appendChild(resultado);
         }
 
         const botaoResposta = document.createElement("button");
-        botaoResposta.textContent = "Ver resposta";
+        botaoResposta.textContent = "Ver resposta correta";
         botaoResposta.type = "button";
 
         const resposta = document.createElement("p");
@@ -832,7 +1040,6 @@ function renderizarExercicios() {
 
         card.appendChild(botaoResposta);
         card.appendChild(resposta);
-
         const editar = document.createElement("button");
         editar.type = "button";
         editar.textContent = "✏️";
@@ -845,10 +1052,51 @@ function renderizarExercicios() {
             tituloExercicio.value = exercicio.titulo;
             enunciadoExercicio.value = exercicio.enunciado;
             tipoExercicio.value = exercicio.tipo;
+            tipoExercicio.dispatchEvent(new Event("change"));
+
+            if (exercicio.tipo === "multipla") {
+                const alternativas = document.querySelectorAll(".alternativa-exercicio");
+
+                alternativas.forEach(function (campo, indice) {
+                    campo.value = exercicio.alternativas[indice] || "";
+                });
+
+                document.querySelectorAll('input[name="gabaritoMultipla"]').forEach(function (radio) {
+                    radio.checked = radio.value === exercicio.resposta;
+                });
+            }
+
+            else if (exercicio.tipo === "verdadeiro-falso") {
+                document.querySelectorAll(".opcao-vf").forEach(function (botao) {
+                    botao.classList.toggle(
+                        "selecionado",
+                        botao.dataset.valor === exercicio.resposta
+                    );
+                });
+
+                respostaCorreta.value = exercicio.resposta;
+            }
+
+            else if (exercicio.tipo === "aberta") {
+                respostaCorreta.value = exercicio.resposta;
+            }
 
             formularioExercicio.style.display = "flex";
         });
+        card.appendChild(editar);
 
+        const excluir = document.createElement("button");
+        excluir.type = "button";
+        excluir.textContent = "🗑️";
+        excluir.title = "Excluir exercício";
+        excluir.setAttribute("aria-label", "Excluir exercício");
+
+        excluir.addEventListener("click", function () {
+            exercicioParaExcluir = exercicio;
+            modalExcluirExercicio.style.display = "flex";
+        });
+
+        card.appendChild(excluir);
         listaExercicios.appendChild(card);
     });
 }
@@ -937,10 +1185,18 @@ document.getElementById("salvarExercicio").addEventListener("click", function ()
             return campo.value.trim();
         }),
 
-        imagem: null
+        imagem: imagemExercicioAtual
     };
 
-    materiaAtual.exercicios.push(novoExercicio);
+    if (exercicioEmEdicao) {
+        const indice = materiaAtual.exercicios.indexOf(exercicioEmEdicao);
+
+        materiaAtual.exercicios[indice] = novoExercicio;
+
+        exercicioEmEdicao = null;
+    } else {
+        materiaAtual.exercicios.push(novoExercicio);
+    }
 
     renderizarExercicios();
 
@@ -948,6 +1204,17 @@ document.getElementById("salvarExercicio").addEventListener("click", function ()
     tituloExercicio.value = "";
     enunciadoExercicio.value = "";
     tipoExercicio.value = "multipla";
+    tipoExercicio.dispatchEvent(new Event("change"));
+
+    document.querySelectorAll('input[name="gabaritoMultipla"]').forEach(function (radio) {
+        radio.checked = false;
+    });
+
+    document.querySelectorAll(".opcao-vf").forEach(function (botao) {
+        botao.classList.remove("selecionado");
+    });
+
+
     respostaCorreta.value = "";
     imagemExercicio.value = "";
     previaImagemExercicio.innerHTML = "";
@@ -997,4 +1264,24 @@ document.querySelectorAll(".opcao-vf").forEach(function (botao) {
         botao.classList.add("selecionado");
         respostaCorreta.value = botao.dataset.valor;
     });
+});
+
+cancelarExcluirExercicio.addEventListener("click", function () {
+    modalExcluirExercicio.style.display = "none";
+    exercicioParaExcluir = null;
+});
+
+confirmarExcluirExercicio.addEventListener("click", function () {
+    if (exercicioParaExcluir) {
+        const indice = materiaAtual.exercicios.indexOf(exercicioParaExcluir);
+
+        if (indice !== -1) {
+            materiaAtual.exercicios.splice(indice, 1);
+        }
+
+        renderizarExercicios();
+    }
+
+    modalExcluirExercicio.style.display = "none";
+    exercicioParaExcluir = null;
 });
