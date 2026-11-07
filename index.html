@@ -155,7 +155,21 @@
                             rows="4"></textarea>
 
                         <label for="tipoExercicio">Tipo de questão <span class="obrigatorio">*</span></label>
-                        <select id="tipoExercicio">
+
+                        <div class="seletor-personalizado" id="seletorTipoExercicio">
+                            <button type="button" class="seletor-botao" id="botaoTipoExercicio">
+                                <span id="textoTipoExercicio">Múltipla escolha</span>
+                                <span class="seta-seletor">⌄</span>
+                            </button>
+
+                            <div class="opcoes-seletor" id="opcoesTipoExercicio">
+                                <button type="button" data-valor="multipla">Múltipla escolha</button>
+                                <button type="button" data-valor="verdadeiro-falso">Verdadeiro ou falso</button>
+                                <button type="button" data-valor="aberta">Resposta aberta</button>
+                            </div>
+                        </div>
+
+                        <select id="tipoExercicio" hidden>
                             <option value="multipla">Múltipla escolha</option>
                             <option value="verdadeiro-falso">Verdadeiro ou falso</option>
                             <option value="aberta">Resposta aberta</option>
@@ -211,6 +225,10 @@
 
                         <div id="previaImagemExercicio"></div>
 
+                        <button type="button" id="btnRemoverImagemExercicio" style="display: none;">
+                            Remover imagem
+                        </button>
+
                         <div class="botoes-exercicio">
                             <button type="button" id="cancelarExercicio">Cancelar</button>
                             <button type="button" id="salvarExercicio">Salvar exercício</button>
@@ -222,7 +240,116 @@
 
             </div>
 
+            <div class="area-conteudo" id="areaConteudo">
 
+                <div class="cabecalho-conteudo">
+                    <div>
+                        <h2>Meus conteúdos</h2>
+                        <p>Organize materiais de estudo, arquivos, vídeos e links desta matéria.</p>
+                    </div>
+
+                    <button type="button" id="novoConteudo">
+                        + Adicionar conteúdo
+                    </button>
+                </div>
+
+                <div class="formulario-conteudo" id="formularioConteudo">
+                    <p class="erro-exercicio" id="erroConteudo"></p>
+
+                    <h3 id="tituloFormularioConteudo">Adicionar conteúdo</h3>
+
+                    <label for="nomeConteudo">Título <span class="obrigatorio">*</span></label>
+                    <input type="text" id="nomeConteudo" placeholder="Ex.: Aula 01 - Introdução à programação">
+
+                    <label for="descricaoConteudo">Descrição (opcional)</label>
+                    <textarea id="descricaoConteudo" rows="3"
+                        placeholder="Adicione uma descrição para este material..."></textarea>
+
+                    <label for="tipoConteudo">Tipo de material <span class="obrigatorio">*</span></label>
+                    <div class="seletor-personalizado" id="seletorTipoConteudo">
+                        <button type="button" class="seletor-botao" id="botaoTipoConteudo">
+                            <span id="textoTipoConteudo">Selecione o tipo</span>
+                            <span class="seta-seletor">⌄</span>
+                        </button>
+
+                        <div class="opcoes-seletor" id="opcoesTipoConteudo">
+                            <button type="button" data-valor="pdf">PDF</button>
+                            <button type="button" data-valor="imagem">Imagem</button>
+                            <button type="button" data-valor="youtube">Vídeo do YouTube</button>
+                            <button type="button" data-valor="link">Link externo</button>
+                        </div>
+                    </div>
+
+                    <select id="tipoConteudo" hidden>
+                        <option value="">Selecione o tipo</option>
+                        <option value="pdf">PDF</option>
+                        <option value="imagem">Imagem</option>
+                        <option value="youtube">Vídeo do YouTube</option>
+                        <option value="link">Link externo</option>
+                    </select>
+
+                    <div id="campoArquivoConteudo">
+                        <label for="arquivoConteudo">Arquivo <span class="obrigatorio">*</span></label>
+                        <input type="file" id="arquivoConteudo" accept=".pdf,application/pdf,image/*">
+
+                        <div id="previaArquivoConteudo"></div>
+
+                        <button type="button" id="removerArquivoConteudo">
+                            Remover arquivo
+                        </button>
+                    </div>
+
+                    <div id="campoLinkConteudo">
+                        <label for="linkConteudo">Endereço do link <span class="obrigatorio">*</span></label>
+                        <input type="url" id="linkConteudo" placeholder="https://...">
+                    </div>
+
+                    <div class="botoes-conteudo">
+                        <button type="button" id="cancelarConteudo">Cancelar</button>
+                        <button type="button" id="salvarConteudo">Salvar conteúdo</button>
+                    </div>
+
+                </div>
+
+                <div class="lista-conteudos" id="listaConteudos"></div>
+
+                <div class="modal-visualizar-conteudo" id="modalVisualizarConteudo">
+
+                    <div class="conteudo-modal">
+
+                        <button type="button" id="fecharVisualizacaoConteudo">
+                            ×
+                        </button>
+
+                        <div id="visualizacaoConteudo"></div>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-excluir-conteudo" id="modalExcluirConteudo">
+
+                    <div class="conteudo-modal-excluir">
+
+                        <h3>Excluir conteúdo?</h3>
+
+                        <p>Tem certeza de que deseja excluir este material?</p>
+
+                        <div class="botoes-excluir-conteudo">
+                            <button type="button" id="cancelarExcluirConteudo">
+                                Cancelar
+                            </button>
+
+                            <button type="button" id="confirmarExcluirConteudo">
+                                Excluir
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </main>
 
