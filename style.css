@@ -513,6 +513,19 @@ body {
     font-size: 28px;
 }
 
+#campoArquivoConteudo,
+#campoLinkConteudo {
+    display: none;
+}
+
+.modal-visualizar-conteudo {
+    display: none;
+}
+
+.modal-excluir-conteudo {
+    display: none;
+}
+
 .conteudo-anotacao-editor {
     flex: 1;
     width: 100%;
@@ -647,6 +660,19 @@ body {
 
 
 .area-atividades {
+    display: none;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    height: 100vh;
+    min-width: 0;
+    padding: 25px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.area-conteudo {
     display: none;
     flex-direction: column;
     gap: 24px;
@@ -934,6 +960,17 @@ body {
     border-radius: 10px;
 }
 
+.formulario-conteudo {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 18px;
+    background-color: #fffaf2;
+    border: 1px solid #f0dfc7;
+    border-radius: 10px;
+}
+
 #camposAlternativas {
     display: flex;
     flex-direction: column;
@@ -1033,6 +1070,21 @@ body {
 #salvarExercicio {
     background-color: #f5a623;
     color: #333;
+}
+#btnRemoverImagemExercicio {
+    align-self: flex-start;
+    padding: 7px 11px;
+    border: 1px solid #f0d9b5;
+    border-radius: 7px;
+    background-color: #fff3df;
+    color: #9b682b;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#btnRemoverImagemExercicio:hover {
+    background-color: #ffe8c5;
 }
 
 
@@ -1322,9 +1374,13 @@ body {
     background-color: #ffffff;
     border: 1px solid #e8dfd3;
     border-radius: 12px;
-    padding: 18px;
+    padding: 55px 18px 18px;
     margin-bottom: 15px;
     position: relative;
+}
+
+.card-exercicio input[type="radio"] {
+    accent-color: #f5a623;
 }
 
 .area-resposta-exercicio {
@@ -1351,10 +1407,19 @@ body {
     width: 100%;
     min-height: 100px;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid #e5d8c6;
     border-radius: 8px;
-    resize: vertical;
+    resize: none; /* Trava o redimensionamento */
     font-family: inherit;
+    outline: none; /* Remove a borda preta ao clicar */
+    background-color: #fff;
+    color: #514638;
+    box-sizing: border-box; /* Garante que o padding e a borda fiquem dentro dos 100%, sem estourar para a direita */
+}
+
+.campo-resposta-aberta:focus {
+    border-color: #f5a623; /* Usa o laranja do tema ao focar */
+    box-shadow: 0 0 0 2px rgb(245 166 35 / 15%);
 }
 
 .resultado-resposta {
@@ -1435,4 +1500,471 @@ body {
     border-radius: 10px;
     display: block;
     margin: 12px 0;
+}
+
+
+/* EDITOR DE RENOMEAÇÃO DE MATÉRIA */
+
+.editor-renomear-materia {
+    margin: 0 8px 10px;
+    padding: 12px;
+    background-color: #fffaf2;
+    border: 1px solid #f0dfc7;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 2px 5px rgba(120, 85, 40, 0.06);
+}
+
+/* Cabeçalho */
+
+.cabecalho-editor-materia {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.icone-editor-materia {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    background-color: #ffedcf;
+    border-radius: 9px;
+    color: #b77935;
+    font-size: 17px;
+}
+
+.textos-editor-materia {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.textos-editor-materia strong {
+    color: #514638;
+    font-size: 12px;
+}
+
+.textos-editor-materia small {
+    color: #999;
+    font-size: 10px;
+}
+
+/* Campo de texto */
+
+.campo-renomear-materia {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 10px;
+    border: 1px solid #e5d8c6;
+    border-radius: 7px;
+    outline: none;
+    background-color: #fff;
+    color: #514638;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.campo-renomear-materia:focus {
+    border-color: #e5b66f;
+    box-shadow: 0 0 0 2px rgb(229 182 111 / 15%);
+}
+
+/* Botões */
+
+.botoes-editor-materia {
+    display: flex;
+    justify-content: flex-end;
+    gap: 7px;
+}
+
+.botoes-editor-materia button {
+    padding: 7px 10px;
+    border: none;
+    border-radius: 7px;
+    font-size: 11px;
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cancelar-nome-materia {
+    background-color: #f1e5d7;
+    color: #62584d;
+}
+
+.cancelar-nome-materia:hover {
+    background-color: #e9d9c7;
+}
+
+.salvar-nome-materia {
+    background-color: #f5a623;
+    color: #fff;
+    font-weight: 600;
+}
+
+.salvar-nome-materia:hover {
+    background-color: #e59a19;
+}
+
+/* OPÇÃO RENOMEAR MATÉRIA */
+.opcao-renomear-materia {
+    background-color: #fffaf0;
+    border: 1px solid #e8c995;
+    color: #9b692e;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 9px 10px;
+    margin-bottom: 4px;
+}
+
+.opcao-renomear-materia:hover {
+    background-color: #ffedcf;
+    border-color: #dfb675;
+}
+
+/* SELETOR PERSONALIZADO - TIPO DE QUESTÃO */
+
+.seletor-personalizado {
+    position: relative;
+    width: 100%;
+}
+
+.seletor-botao {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid #e5d8c6;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #514638;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.seletor-botao:hover,
+.seletor-personalizado.aberto .seletor-botao {
+    border-color: #d9ad70;
+}
+
+.seletor-botao:focus {
+    outline: none;
+    border-color: #d9ad70;
+    box-shadow: 0 0 0 2px #f5e7d2;
+}
+
+.seta-seletor {
+    font-size: 18px;
+    color: #9b7952;
+    transition: transform 0.2s;
+}
+
+.seletor-personalizado.aberto .seta-seletor {
+    transform: rotate(180deg);
+}
+
+.opcoes-seletor {
+    display: none;
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px;
+    background-color: #fffaf2;
+    border: 1px solid #e5d8c6;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 20;
+}
+
+.seletor-personalizado.aberto .opcoes-seletor {
+    display: flex;
+    flex-direction: column;
+}
+
+.opcoes-seletor button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #514638;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.opcoes-seletor button:hover {
+    background-color: #f5e7d2;
+}
+
+.opcoes-seletor button.selecionado {
+    background-color: #f0dfc7;
+    font-weight: bold;
+}
+
+.cartao-conteudo {
+    position: relative;
+    padding: 18px;
+    margin-bottom: 15px;
+    background-color: #ffffff;
+    border: 1px solid #e8dfd3;
+    border-radius: 12px;
+}
+
+.cartao-conteudo h3 {
+    margin: 0 0 8px;
+    color: #514638;
+    font-size: 17px;
+    overflow-wrap: anywhere;
+}
+
+.cartao-conteudo p {
+    margin: 0 0 12px;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.cartao-conteudo span {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 5px 9px;
+    background-color: #fff3df;
+    color: #9b682b;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.cartao-conteudo button {
+    padding: 7px 12px;
+    border: 1px solid #f0d9b5;
+    border-radius: 8px;
+    background-color: #fff3df;
+    color: #9b682b;
+    font-size: 13px;
+    cursor: pointer;
+    margin-right: 6px;
+    transition: background-color 0.2s;
+}
+
+.cartao-conteudo button:hover {
+    background-color: #ffe8c5;
+}
+
+.cabecalho-conteudo h2 {
+    margin: 0;
+    color: #555;
+    font-family: "Caveat", cursive;
+    font-size: 32px;
+}
+
+#novoConteudo {
+    width: 150px;
+    height: 38px;
+    padding: 9px 10px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    background-color: #f5a623;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: normal;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.formulario-conteudo h3 {
+    margin: 0 0 5px;
+    color: #555;
+    font-family: "Caveat", cursive;
+    font-size: 24px;
+}
+
+.formulario-conteudo label {
+    color: #514638;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.formulario-conteudo input,
+.formulario-conteudo textarea,
+.formulario-conteudo select {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #e5d8c6;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #514638;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.formulario-conteudo input:focus,
+.formulario-conteudo textarea:focus,
+.formulario-conteudo select:focus {
+    outline: none;
+    border-color: #d9ad70;
+    box-shadow: 0 0 0 2px #f5e7d2;
+}
+
+.formulario-conteudo textarea {
+    resize: none;
+}
+
+/* Barra de rolagem da descrição do conteúdo */
+.formulario-conteudo textarea::-webkit-scrollbar {
+    width: 5px;
+}
+
+.formulario-conteudo textarea::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.formulario-conteudo textarea::-webkit-scrollbar-thumb {
+    background-color: #e5b66f;
+    border-radius: 10px;
+}
+
+.formulario-conteudo textarea::-webkit-scrollbar-thumb:hover {
+    background-color: #d99a42;
+}
+
+#campoArquivoConteudo {
+    display: none;
+}
+
+#previaArquivoConteudo {
+    display: none;
+    margin-top: 12px;
+}
+
+#previaArquivoConteudo img {
+    max-width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+#previaArquivoConteudo iframe {
+    width: 100%;
+    height: 300px;
+    border: 1px solid #e5d8c6;
+    border-radius: 8px;
+}
+
+#removerArquivoConteudo {
+    align-self: flex-start;
+    padding: 7px 11px;
+    border: 1px solid #f0d9b5;
+    border-radius: 7px;
+    background-color: #fff3df;
+    color: #9b682b;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#removerArquivoConteudo:hover {
+    background-color: #ffe8c5;
+}
+
+#campoArquivoConteudo label {
+    display: block;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+#campoArquivoConteudo input[type="file"] {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 7px;
+    background-color: #fff;
+    color: #514638;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+}
+
+#campoArquivoConteudo input[type="file"]::file-selector-button {
+    padding: 7px 12px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 6px;
+    background-color: #ffedcf;
+    color: #514638;
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+}
+
+.botoes-conteudo button {
+    padding: 9px 14px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.botoes-conteudo button:first-child {
+    background-color: #eee5d9;
+    color: #514638;
+}
+
+.botoes-conteudo button:last-child {
+    background-color: #f5a623;
+    color: #333;
+}
+
+.formulario-conteudo select {
+    cursor: pointer;
+    color: #514638;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23514638' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+#campoLinkConteudo {
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Barra de rolagem da área de Conteúdo */
+.area-conteudo::-webkit-scrollbar {
+    width: 6px;
+}
+
+.area-conteudo::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.area-conteudo::-webkit-scrollbar-thumb {
+    background-color: #e5b66f;
+    border-radius: 10px;
+}
+
+.area-conteudo::-webkit-scrollbar-thumb:hover {
+    background-color: #d99a42;
 }
