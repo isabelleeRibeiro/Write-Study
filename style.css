@@ -1817,7 +1817,7 @@ body {
     border-radius: 8px;
     background-color: #fff;
     color: #514638;
-    font-family: inherit;
+    font-family: Arial, sans-serif;
     font-size: 14px;
     outline: none;
 }
@@ -1869,13 +1869,17 @@ body {
 }
 
 #previaArquivoConteudo iframe {
-    width: 100%;
-    height: 300px;
-    border: 1px solid #e5d8c6;
+    display: block;
+    width: 400px;
+    max-width: 100%;
+    height: 460px;
+    border: 1px solid #e5b66f;
     border-radius: 8px;
+    background-color: #fffaf2;
+    box-shadow: 0 3px 10px rgba(120, 85, 40, 0.08);
 }
-
 #removerArquivoConteudo {
+    margin-top: 18px;
     align-self: flex-start;
     padding: 7px 11px;
     border: 1px solid #f0d9b5;
