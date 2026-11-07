@@ -21,6 +21,39 @@ const cancelarExcluirAnotacao = document.getElementById("cancelarExcluirAnotacao
 const confirmarExcluirAnotacao = document.getElementById("confirmarExcluirAnotacao");
 
 const areaAtividades = document.getElementById("areaAtividades");
+const areaConteudo = document.getElementById("areaConteudo");
+
+// Elementos dos conteúdos
+const formularioConteudo = document.getElementById("formularioConteudo");
+const erroConteudo = document.getElementById("erroConteudo");
+const botaoNovoConteudo = document.getElementById("novoConteudo");
+const cancelarConteudo = document.getElementById("cancelarConteudo");
+const salvarConteudo = document.getElementById("salvarConteudo");
+
+const nomeConteudo = document.getElementById("nomeConteudo");
+const descricaoConteudo = document.getElementById("descricaoConteudo");
+const tipoConteudo = document.getElementById("tipoConteudo");
+
+const seletorTipoConteudo = document.getElementById("seletorTipoConteudo");
+const botaoTipoConteudo = document.getElementById("botaoTipoConteudo");
+const textoTipoConteudo = document.getElementById("textoTipoConteudo");
+const opcoesTipoConteudo = document.getElementById("opcoesTipoConteudo");
+
+const arquivoConteudo = document.getElementById("arquivoConteudo");
+const linkConteudo = document.getElementById("linkConteudo");
+
+const campoArquivoConteudo = document.getElementById("campoArquivoConteudo");
+const campoLinkConteudo = document.getElementById("campoLinkConteudo");
+const listaConteudos = document.getElementById("listaConteudos");
+const tituloFormularioConteudo = document.getElementById("tituloFormularioConteudo");
+const modalVisualizarConteudo = document.getElementById("modalVisualizarConteudo");
+const fecharVisualizacaoConteudo = document.getElementById("fecharVisualizacaoConteudo");
+const visualizacaoConteudo = document.getElementById("visualizacaoConteudo");
+
+// Elementos do modal de exclusão de conteúdo
+const modalExcluirConteudo = document.getElementById("modalExcluirConteudo");
+const cancelarExcluirConteudo = document.getElementById("cancelarExcluirConteudo");
+const confirmarExcluirConteudo = document.getElementById("confirmarExcluirConteudo");
 
 const formularioTarefa = document.getElementById("formularioTarefa");
 const tituloTarefa = document.getElementById("tituloTarefa");
@@ -46,9 +79,16 @@ const cancelarExercicio = document.getElementById("cancelarExercicio");
 const tituloExercicio = document.getElementById("tituloExercicio");
 const enunciadoExercicio = document.getElementById("enunciadoExercicio");
 const tipoExercicio = document.getElementById("tipoExercicio");
+
+const seletorTipo = document.getElementById("seletorTipoExercicio");
+const botaoTipo = document.getElementById("botaoTipoExercicio");
+const textoTipo = document.getElementById("textoTipoExercicio");
+const opcoesTipo = document.getElementById("opcoesTipoExercicio");
+
 const respostaCorreta = document.getElementById("respostaCorreta");
 const imagemExercicio = document.getElementById("imagemExercicio");
 const previaImagemExercicio = document.getElementById("previaImagemExercicio");
+const btnRemoverImagemExercicio = document.getElementById("btnRemoverImagemExercicio");
 const erroExercicio = document.getElementById("erroExercicio");
 
 const listaExercicios = document.getElementById("listaExercicios");
@@ -63,6 +103,13 @@ const modalExcluirExercicio = document.getElementById("modalExcluirExercicio");
 const cancelarExcluirExercicio = document.getElementById("cancelarExcluirExercicio");
 const confirmarExcluirExercicio = document.getElementById("confirmarExcluirExercicio");
 
+const tituloFormularioExercicio = document.getElementById("tituloFormularioExercicio");
+
+const previaArquivoConteudo = document.getElementById("previaArquivoConteudo");
+const removerArquivoConteudo = document.getElementById("removerArquivoConteudo");
+
+let arquivoConteudoAtual = null;
+
 let tarefaParaApagar = null;
 let materiaDaTarefaParaApagar = null;
 
@@ -74,10 +121,384 @@ let materiaParaApagar = null;
 
 let tarefaEmEdicao = null;
 let exercicioEmEdicao = null;
+let conteudoEmEdicao = null;
 
 let exercicioParaExcluir = null;
 
 let imagemExercicioAtual = null;
+
+let removerImagemExercicio = false;
+
+let conteudoParaExcluir = null;
+
+arquivoConteudo.addEventListener("change", function () {
+    const arquivo = arquivoConteudo.files[0];
+
+    if (!arquivo) return;
+
+    ocultarErroConteudo();
+
+    if (tipoConteudo.value === "pdf" && arquivo.type !== "application/pdf") {
+        arquivoConteudo.value = "";
+        previaArquivoConteudo.innerHTML = "";
+        previaArquivoConteudo.style.display = "none";
+        removerArquivoConteudo.style.display = "none";
+
+        mostrarErroConteudo("O arquivo selecionado não é um PDF. Escolha um arquivo PDF.");
+        return;
+    }
+
+    if (tipoConteudo.value === "imagem" && !arquivo.type.startsWith("image/")) {
+        arquivoConteudo.value = "";
+        previaArquivoConteudo.innerHTML = "";
+        previaArquivoConteudo.style.display = "none";
+        removerArquivoConteudo.style.display = "none";
+
+        mostrarErroConteudo("O arquivo selecionado não é uma imagem. Escolha um arquivo de imagem.");
+        return;
+    }
+
+    arquivoConteudoAtual = arquivo;
+
+    const url = URL.createObjectURL(arquivo);
+
+    previaArquivoConteudo.innerHTML = "";
+
+    if (arquivo.type.startsWith("image/")) {
+        const imagem = document.createElement("img");
+        imagem.src = url;
+
+        previaArquivoConteudo.appendChild(imagem);
+    } else if (arquivo.type === "application/pdf") {
+        const pdf = document.createElement("iframe");
+        pdf.src = url;
+
+        previaArquivoConteudo.appendChild(pdf);
+    }
+
+    previaArquivoConteudo.style.display = "block";
+    removerArquivoConteudo.style.display = "inline-block";
+});
+
+removerArquivoConteudo.addEventListener("click", function () {
+    arquivoConteudo.value = "";
+    arquivoConteudoAtual = null;
+
+    previaArquivoConteudo.innerHTML = "";
+    previaArquivoConteudo.style.display = "none";
+
+    removerArquivoConteudo.style.display = "none";
+});
+
+function mostrarErroConteudo(mensagem) {
+    erroConteudo.textContent = mensagem;
+    erroConteudo.classList.add("visivel");
+}
+
+function ocultarErroConteudo() {
+    erroConteudo.textContent = "";
+    erroConteudo.classList.remove("visivel");
+}
+
+nomeConteudo.addEventListener("input", ocultarErroConteudo);
+tipoConteudo.addEventListener("change", ocultarErroConteudo);
+linkConteudo.addEventListener("input", ocultarErroConteudo);
+
+
+botaoNovoConteudo.addEventListener("click", function () {
+    formularioConteudo.style.display = "flex";
+
+    tipoConteudo.value = "";
+    tipoConteudo.dispatchEvent(new Event("change"));
+    atualizarSeletorTipoConteudo();
+    seletorTipoConteudo.classList.remove("aberto");
+
+    arquivoConteudo.value = "";
+    arquivoConteudoAtual = null;
+
+    previaArquivoConteudo.innerHTML = "";
+    previaArquivoConteudo.style.display = "none";
+
+    removerArquivoConteudo.style.display = "none";
+
+    tituloFormularioConteudo.textContent = "Adicionar conteúdo";
+    nomeConteudo.focus();
+});
+
+cancelarConteudo.addEventListener("click", function () {
+    ocultarErroConteudo();
+    formularioConteudo.style.display = "none";
+
+    nomeConteudo.value = "";
+    descricaoConteudo.value = "";
+    tipoConteudo.value = "";
+    arquivoConteudo.value = "";
+    linkConteudo.value = "";
+});
+
+fecharVisualizacaoConteudo.addEventListener("click", function () {
+
+    modalVisualizarConteudo.style.display = "none";
+    visualizacaoConteudo.innerHTML = "";
+
+});
+
+cancelarExcluirConteudo.addEventListener("click", function () {
+
+    modalExcluirConteudo.style.display = "none";
+
+    conteudoParaExcluir = null;
+
+});
+
+confirmarExcluirConteudo.addEventListener("click", function () {
+
+    if (conteudoParaExcluir) {
+
+        materiaAtual.conteudos = materiaAtual.conteudos.filter(function (conteudo) {
+            return conteudo.id !== conteudoParaExcluir.id;
+        });
+
+        renderizarConteudos();
+
+        conteudoParaExcluir = null;
+
+    }
+
+    modalExcluirConteudo.style.display = "none";
+
+});
+
+// SELETOR PERSONALIZADO - TIPO DE CONTEÚDO
+botaoTipoConteudo.addEventListener("click", function () {
+    seletorTipoConteudo.classList.toggle("aberto");
+});
+
+function atualizarSeletorTipoConteudo() {
+    const opcaoSelecionada = tipoConteudo.options[tipoConteudo.selectedIndex];
+
+    textoTipoConteudo.textContent = opcaoSelecionada.textContent;
+
+    opcoesTipoConteudo.querySelectorAll("button").forEach(function (botao) {
+        botao.classList.toggle(
+            "selecionado",
+            botao.dataset.valor === tipoConteudo.value
+        );
+    });
+}
+
+opcoesTipoConteudo.querySelectorAll("button").forEach(function (botao) {
+    botao.addEventListener("click", function () {
+        tipoConteudo.value = botao.dataset.valor;
+
+        tipoConteudo.dispatchEvent(new Event("change"));
+
+        atualizarSeletorTipoConteudo();
+        seletorTipoConteudo.classList.remove("aberto");
+    });
+});
+
+tipoConteudo.addEventListener("change", atualizarSeletorTipoConteudo);
+
+document.addEventListener("click", function (evento) {
+    if (!seletorTipoConteudo.contains(evento.target)) {
+        seletorTipoConteudo.classList.remove("aberto");
+    }
+});
+
+atualizarSeletorTipoConteudo();
+
+tipoConteudo.addEventListener("change", function () {
+
+    campoArquivoConteudo.style.display = "none";
+    campoLinkConteudo.style.display = "none";
+
+    if (tipoConteudo.value === "pdf" || tipoConteudo.value === "imagem") {
+        campoArquivoConteudo.style.display = "block";
+    }
+
+    if (tipoConteudo.value === "youtube" || tipoConteudo.value === "link") {
+        campoLinkConteudo.style.display = "flex";
+    }
+
+});
+
+async function validarArquivoReal(arquivo, tipo) {
+    const bytes = new Uint8Array(
+        await arquivo.slice(0, 12).arrayBuffer()
+    );
+
+    if (tipo === "pdf") {
+        return (
+            bytes[0] === 0x25 &&
+            bytes[1] === 0x50 &&
+            bytes[2] === 0x44 &&
+            bytes[3] === 0x46 &&
+            bytes[4] === 0x2D
+        );
+    }
+
+    if (tipo === "imagem") {
+        const png =
+            bytes[0] === 0x89 &&
+            bytes[1] === 0x50 &&
+            bytes[2] === 0x4E &&
+            bytes[3] === 0x47;
+
+        const jpeg =
+            bytes[0] === 0xFF &&
+            bytes[1] === 0xD8 &&
+            bytes[2] === 0xFF;
+
+        const gif =
+            bytes[0] === 0x47 &&
+            bytes[1] === 0x49 &&
+            bytes[2] === 0x46;
+
+        const webp =
+            String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
+            String.fromCharCode(...bytes.slice(8, 12)) === "WEBP";
+
+        return png || jpeg || gif || webp;
+    }
+
+    return false;
+}
+
+salvarConteudo.addEventListener("click", async function () {
+
+    const nome = nomeConteudo.value.trim();
+    const descricao = descricaoConteudo.value.trim();
+    const tipo = tipoConteudo.value;
+
+    if (!nome) {
+        mostrarErroConteudo("Informe o título do conteúdo.");
+        nomeConteudo.focus();
+        return;
+    }
+
+    if (!tipo) {
+        mostrarErroConteudo("Selecione o tipo de material.");
+        tipoConteudo.focus();
+        return;
+    }
+
+    if (
+        (tipo === "pdf" || tipo === "imagem") &&
+        !arquivoConteudo.files[0] &&
+        !(conteudoEmEdicao && conteudoEmEdicao.tipo === tipo && conteudoEmEdicao.arquivo)
+    ) {
+        mostrarErroConteudo("Selecione um arquivo.");
+        arquivoConteudo.focus();
+        return;
+    }
+
+    const arquivoSelecionado = arquivoConteudo.files[0];
+
+    if (arquivoSelecionado) {
+        const arquivoValido = await validarArquivoReal(
+            arquivoSelecionado,
+            tipo
+        );
+
+        if (!arquivoValido) {
+            mostrarErroConteudo(
+                tipo === "pdf"
+                    ? "O arquivo selecionado não é um PDF válido."
+                    : "O arquivo selecionado não é uma imagem válida."
+            );
+
+            return;
+        }
+    }
+
+    if ((tipo === "youtube" || tipo === "link") && !linkConteudo.value.trim()) {
+        mostrarErroConteudo("Informe o endereço do link.");
+        linkConteudo.focus();
+        return;
+    }
+
+    const novoConteudo = {
+        id: conteudoEmEdicao ? conteudoEmEdicao.id : Date.now(),
+        nome: nome,
+        descricao: descricao,
+        tipo: tipo,
+        arquivo: conteudoEmEdicao && conteudoEmEdicao.tipo === tipo
+            ? conteudoEmEdicao.arquivo
+            : null,
+        link: linkConteudo.value.trim()
+    };
+
+    function concluirSalvamentoConteudo() {
+
+        if (conteudoEmEdicao) {
+
+            const indice = materiaAtual.conteudos.findIndex(function (item) {
+                return item.id === conteudoEmEdicao.id;
+            });
+
+            if (indice !== -1) {
+                materiaAtual.conteudos[indice] = novoConteudo;
+            }
+
+        } else {
+            materiaAtual.conteudos.push(novoConteudo);
+        }
+
+        conteudoEmEdicao = null;
+
+        renderizarConteudos();
+
+        ocultarErroConteudo();
+        formularioConteudo.style.display = "none";
+
+        nomeConteudo.value = "";
+        descricaoConteudo.value = "";
+        tipoConteudo.value = "";
+        arquivoConteudo.value = "";
+        linkConteudo.value = "";
+
+        campoArquivoConteudo.style.display = "none";
+        campoLinkConteudo.style.display = "none";
+
+        tituloFormularioConteudo.textContent = "Adicionar conteúdo";
+        salvarConteudo.textContent = "Salvar conteúdo";
+
+    }
+
+    if (tipo === "pdf" || tipo === "imagem") {
+
+        const arquivo = arquivoConteudo.files[0];
+
+        if (arquivo) {
+
+            const leitor = new FileReader();
+
+            leitor.onload = function () {
+
+                novoConteudo.arquivo = leitor.result;
+
+                concluirSalvamentoConteudo();
+
+            };
+
+            leitor.readAsDataURL(arquivo);
+
+        } else {
+
+            concluirSalvamentoConteudo();
+
+        }
+
+    }
+
+    if (tipo === "youtube" || tipo === "link") {
+
+        concluirSalvamentoConteudo();
+
+    }
+
+});
 
 // Abre o campo para adicionar uma matéria
 botao.addEventListener("click", function () {
@@ -100,6 +521,7 @@ function criarMateria() {
 
     novaMateria.anotacoes = [];
     novaMateria.exercicios = [];
+    novaMateria.conteudos = [];
 
     const cabecalho = document.createElement("div");
     cabecalho.classList.add("cabecalho-materia");
@@ -125,17 +547,127 @@ function criarMateria() {
     const submenu = document.createElement("div");
     submenu.classList.add("submenu-materia");
 
-    const opcoes = ["Anotações", "Atividades", "Conteúdo"];
+    const opcoes = [
+        "✏️ Renomear matéria",
+        "Anotações",
+        "Atividades",
+        "Conteúdo"
+    ];
 
 
     opcoes.forEach(function (opcao) {
         const botaoOpcao = document.createElement("button");
         botaoOpcao.classList.add("opcao-materia");
+
+        if (opcao === "✏️ Renomear matéria") {
+            botaoOpcao.classList.add("opcao-renomear-materia");
+        }
+
         botaoOpcao.textContent = opcao;
         botaoOpcao.type = "button";
 
         botaoOpcao.addEventListener("click", function (evento) {
             evento.stopPropagation();
+
+
+            if (opcao === "✏️ Renomear matéria") {
+                submenu.classList.remove("aberto");
+
+                // Evita criar mais de um editor
+                if (novaMateria.querySelector(".editor-renomear-materia")) {
+                    return;
+                }
+
+                const editor = document.createElement("div");
+                editor.classList.add("editor-renomear-materia");
+
+                // Cabeçalho do editor
+                const cabecalhoEditor = document.createElement("div");
+                cabecalhoEditor.classList.add("cabecalho-editor-materia");
+
+                const icone = document.createElement("span");
+                icone.classList.add("icone-editor-materia");
+                icone.textContent = "✏";
+
+                const textos = document.createElement("div");
+                textos.classList.add("textos-editor-materia");
+
+                const tituloEditor = document.createElement("strong");
+                tituloEditor.textContent = "Renomear matéria";
+
+                const descricaoEditor = document.createElement("small");
+                descricaoEditor.textContent = "Escolha um novo nome";
+
+                textos.appendChild(tituloEditor);
+                textos.appendChild(descricaoEditor);
+
+                cabecalhoEditor.appendChild(icone);
+                cabecalhoEditor.appendChild(textos);
+
+                // Campo do novo nome
+                const campoNome = document.createElement("input");
+                campoNome.type = "text";
+                campoNome.classList.add("campo-renomear-materia");
+                campoNome.value = nome.textContent;
+                campoNome.placeholder = "Nome da matéria";
+
+                // Botões
+                const botoesEditor = document.createElement("div");
+                botoesEditor.classList.add("botoes-editor-materia");
+
+                const salvar = document.createElement("button");
+                salvar.type = "button";
+                salvar.classList.add("salvar-nome-materia");
+                salvar.textContent = "Salvar";
+
+                const cancelarEdicao = document.createElement("button");
+                cancelarEdicao.type = "button";
+                cancelarEdicao.classList.add("cancelar-nome-materia");
+                cancelarEdicao.textContent = "Cancelar";
+
+                function salvarNome() {
+                    const novoNome = campoNome.value.trim();
+
+                    if (novoNome === "") {
+                        campoNome.focus();
+                        return;
+                    }
+
+                    nome.textContent = novoNome;
+                    editor.remove();
+                }
+
+                salvar.addEventListener("click", salvarNome);
+
+                cancelarEdicao.addEventListener("click", function () {
+                    editor.remove();
+                });
+
+                campoNome.addEventListener("keydown", function (evento) {
+                    if (evento.key === "Enter") {
+                        salvarNome();
+                    }
+
+                    if (evento.key === "Escape") {
+                        editor.remove();
+                    }
+                });
+
+                // Montagem do editor
+                botoesEditor.appendChild(cancelarEdicao);
+                botoesEditor.appendChild(salvar);
+
+                editor.appendChild(cabecalhoEditor);
+                editor.appendChild(campoNome);
+                editor.appendChild(botoesEditor);
+
+                novaMateria.insertBefore(editor, submenu);
+
+                campoNome.focus();
+                campoNome.select();
+
+                return;
+            }
 
 
             if (opcao === "Anotações") {
@@ -148,6 +680,7 @@ function criarMateria() {
                 ) {
                     areaAnotacoes.style.display = "none";
                     areaAtividades.style.display = "none";
+                    areaConteudo.style.display = "none";
                     inicio.style.display = "flex";
 
                     materiaAtual = null;
@@ -161,8 +694,9 @@ function criarMateria() {
 
                 // Abre as anotações da matéria selecionada
                 inicio.style.display = "none";
+                areaConteudo.style.display = "none";
+                areaAtividades.style.display = "none";
                 areaAnotacoes.style.display = "flex";
-
                 materiaAtual = novaMateria;
                 anotacaoAtual = null;
 
@@ -185,6 +719,7 @@ function criarMateria() {
 
                 // Abre as atividades da matéria selecionada
                 inicio.style.display = "none";
+                areaConteudo.style.display = "none";
                 areaAnotacoes.style.display = "none";
                 areaAtividades.style.display = "flex";
 
@@ -196,6 +731,33 @@ function criarMateria() {
 
                 listaExercicios.innerHTML = "";
                 renderizarExercicios();
+
+                listaAnotacoes.innerHTML = "";
+                mostrarEditorVazio();
+            }
+
+            if (opcao === "Conteúdo") {
+
+                // Se clicar novamente na mesma matéria, fecha os conteúdos
+                if (
+                    materiaAtual === novaMateria &&
+                    areaConteudo.style.display === "flex"
+                ) {
+                    areaConteudo.style.display = "none";
+                    inicio.style.display = "flex";
+                    materiaAtual = null;
+                    return;
+                }
+
+                // Abre os conteúdos da matéria selecionada
+                inicio.style.display = "none";
+                areaAnotacoes.style.display = "none";
+                areaAtividades.style.display = "none";
+                areaConteudo.style.display = "flex";
+
+                materiaAtual = novaMateria;
+                anotacaoAtual = null;
+                renderizarConteudos();
 
                 listaAnotacoes.innerHTML = "";
                 mostrarEditorVazio();
@@ -218,6 +780,12 @@ function criarMateria() {
     // Abre ou fecha o submenu ao clicar no cabeçalho
 
     cabecalho.addEventListener("click", function () {
+
+        // Impede a interação enquanto a matéria estiver sendo renomeada
+        if (document.querySelector(".editor-renomear-materia")) {
+            return;
+        }
+
         const estavaAberto = submenu.classList.contains("aberto");
 
         // Fecha os submenus de todas as matérias
@@ -237,6 +805,7 @@ function criarMateria() {
         // Sempre que clicar na matéria, fecha a área de atividades
         areaAnotacoes.style.display = "none";
         areaAtividades.style.display = "none";
+        areaConteudo.style.display = "none";
 
         materiaAtual = null;
         anotacaoAtual = null;
@@ -601,7 +1170,14 @@ salvarTarefa.addEventListener("click", function () {
     erroTarefa.classList.remove("visivel");
 
     if (!materiaAtual) {
-        alert("Selecione uma matéria antes de salvar a tarefa.");
+        erroTarefa.textContent = "Selecione uma matéria antes de salvar a tarefa.";
+        erroTarefa.classList.add("visivel");
+
+        erroTarefa.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
         return;
     }
 
@@ -634,6 +1210,153 @@ salvarTarefa.addEventListener("click", function () {
     prazoTarefa.value = "";
 });
 
+function renderizarConteudos() {
+
+    listaConteudos.innerHTML = "";
+
+    if (!materiaAtual) return;
+
+    materiaAtual.conteudos.forEach(function (conteudo) {
+
+        const cartao = document.createElement("div");
+        cartao.classList.add("cartao-conteudo");
+
+        const titulo = document.createElement("h3");
+        titulo.textContent = conteudo.nome;
+
+        const descricao = document.createElement("p");
+        descricao.textContent = conteudo.descricao || "";
+
+        const tipo = document.createElement("span");
+        tipo.textContent = conteudo.tipo.toUpperCase();
+
+        const botaoVisualizar = document.createElement("button");
+        botaoVisualizar.textContent = "Visualizar";
+        botaoVisualizar.classList.add("botao-visualizar-conteudo");
+
+        const botaoEditar = document.createElement("button");
+        botaoEditar.textContent = "Editar";
+        botaoEditar.classList.add("botao-editar-conteudo");
+
+        const botaoExcluir = document.createElement("button");
+        botaoExcluir.textContent = "Excluir";
+        botaoExcluir.classList.add("botao-excluir-conteudo");
+
+        botaoExcluir.addEventListener("click", function () {
+
+            conteudoParaExcluir = conteudo;
+
+            modalExcluirConteudo.style.display = "flex";
+
+        });
+
+        botaoEditar.addEventListener("click", function () {
+
+            conteudoEmEdicao = conteudo;
+
+            nomeConteudo.value = conteudo.nome;
+            descricaoConteudo.value = conteudo.descricao;
+            tipoConteudo.value = conteudo.tipo;
+            linkConteudo.value = conteudo.link || "";
+
+            arquivoConteudo.value = "";
+
+            tituloFormularioConteudo.textContent = "Editar conteúdo";
+            salvarConteudo.textContent = "Salvar alterações";
+
+            campoArquivoConteudo.style.display =
+                (conteudo.tipo === "pdf" || conteudo.tipo === "imagem") ? "block" : "none";
+
+            campoLinkConteudo.style.display =
+                (conteudo.tipo === "youtube" || conteudo.tipo === "link") ? "flex" : "none";
+
+            formularioConteudo.style.display = "flex";
+
+            nomeConteudo.focus();
+
+        });
+
+        botaoVisualizar.addEventListener("click", function () {
+
+            if (conteudo.tipo === "pdf") {
+
+                const arquivo = document.createElement("iframe");
+                arquivo.src = conteudo.arquivo;
+                arquivo.style.width = "100%";
+                arquivo.style.height = "75vh";
+
+                visualizacaoConteudo.appendChild(arquivo);
+
+                modalVisualizarConteudo.style.display = "flex";
+
+            }
+
+            if (conteudo.tipo === "imagem") {
+
+                const imagem = document.createElement("img");
+                imagem.src = conteudo.arquivo;
+                imagem.style.maxWidth = "100%";
+                imagem.style.maxHeight = "75vh";
+                imagem.style.objectFit = "contain";
+
+                visualizacaoConteudo.appendChild(imagem);
+
+                modalVisualizarConteudo.style.display = "flex";
+
+            }
+
+            if (conteudo.tipo === "link") {
+                window.open(conteudo.link, "_blank");
+            }
+
+            if (conteudo.tipo === "youtube") {
+
+                const videoId = conteudo.link.match(
+                    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/
+                );
+
+                if (!videoId) {
+                    const aviso = document.createElement("p");
+
+                    aviso.classList.add("erro-exercicio", "visivel");
+                    aviso.textContent = "Endereço do YouTube inválido. Verifique o link e tente novamente.";
+
+                    visualizacaoConteudo.innerHTML = "";
+                    visualizacaoConteudo.appendChild(aviso);
+
+                    modalVisualizarConteudo.style.display = "flex";
+
+                    return;
+                }
+
+                const video = document.createElement("iframe");
+                video.src = "https://www.youtube.com/embed/" + videoId[1];
+                video.style.width = "100%";
+                video.style.height = "75vh";
+                video.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+                video.allowFullscreen = true;
+
+                visualizacaoConteudo.appendChild(video);
+
+                modalVisualizarConteudo.style.display = "flex";
+
+            }
+
+        });
+
+        cartao.appendChild(titulo);
+        cartao.appendChild(descricao);
+        cartao.appendChild(tipo);
+
+        cartao.appendChild(botaoVisualizar);
+        cartao.appendChild(botaoEditar);
+        cartao.appendChild(botaoExcluir);
+
+        listaConteudos.appendChild(cartao);
+
+    });
+
+}
 
 function renderizarTarefas() {
     listaTarefas.innerHTML = "";
@@ -730,6 +1453,8 @@ function renderizarTarefas() {
     });
 }
 
+
+
 tituloTarefa.addEventListener("input", function () {
     if (tituloTarefa.value.trim() !== "") {
         erroTarefa.classList.remove("visivel");
@@ -764,20 +1489,40 @@ confirmarExcluirTarefa.addEventListener("click", function () {
 // Abrir formulário de exercício
 botaoNovoExercicio.addEventListener("click", function () {
     exercicioEmEdicao = null;
+    imagemExercicioAtual = null;
+    removerImagemExercicio = false;
 
+    previaImagemExercicio.innerHTML = "";
+    imagemExercicio.value = "";
+    btnRemoverImagemExercicio.style.display = "none";
+
+    tituloFormularioExercicio.textContent = "Novo exercício";
     formularioExercicio.style.display = "flex";
 });
 
 // Prévia da imagem do exercício
 imagemExercicio.addEventListener("change", function () {
     previaImagemExercicio.innerHTML = "";
+    btnRemoverImagemExercicio.style.display = "none";
 
     const arquivo = imagemExercicio.files[0];
 
     if (!arquivo) return;
 
+    if (erroExercicio.textContent === "Selecione um arquivo de imagem.") {
+        erroExercicio.textContent = "";
+        erroExercicio.classList.remove("visivel");
+    }
+
     if (!arquivo.type.startsWith("image/")) {
-        alert("Selecione um arquivo de imagem.");
+        erroExercicio.textContent = "Selecione um arquivo de imagem.";
+        erroExercicio.classList.add("visivel");
+
+        erroExercicio.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
         imagemExercicio.value = "";
         return;
     }
@@ -786,15 +1531,28 @@ imagemExercicio.addEventListener("change", function () {
 
     leitor.onload = function () {
         imagemExercicioAtual = leitor.result;
+        removerImagemExercicio = false;
 
         const imagem = document.createElement("img");
         imagem.src = imagemExercicioAtual;
         imagem.classList.add("imagem-previa-exercicio");
 
         previaImagemExercicio.appendChild(imagem);
+
+        btnRemoverImagemExercicio.style.display = "block";
     };
 
     leitor.readAsDataURL(arquivo);
+});
+
+btnRemoverImagemExercicio.addEventListener("click", function () {
+    imagemExercicioAtual = null;
+    removerImagemExercicio = true;
+
+    imagemExercicio.value = "";
+    previaImagemExercicio.innerHTML = "";
+
+    btnRemoverImagemExercicio.style.display = "none";
 });
 
 // Cancelar cadastro de exercício
@@ -807,6 +1565,7 @@ cancelarExercicio.addEventListener("click", function () {
     respostaCorreta.value = "";
     imagemExercicio.value = "";
     previaImagemExercicio.innerHTML = "";
+    imagemExercicioAtual = null;
 
     erroExercicio.classList.remove("visivel");
 });
@@ -1049,6 +1808,20 @@ function renderizarExercicios() {
         editar.addEventListener("click", function () {
             exercicioEmEdicao = exercicio;
 
+            imagemExercicioAtual = exercicio.imagem || null;
+            removerImagemExercicio = false;
+
+            previaImagemExercicio.innerHTML = "";
+            btnRemoverImagemExercicio.style.display = imagemExercicioAtual ? "block" : "none";
+
+            if (imagemExercicioAtual) {
+                const imagem = document.createElement("img");
+                imagem.src = imagemExercicioAtual;
+                imagem.classList.add("imagem-previa-exercicio");
+
+                previaImagemExercicio.appendChild(imagem);
+            }
+
             tituloExercicio.value = exercicio.titulo;
             enunciadoExercicio.value = exercicio.enunciado;
             tipoExercicio.value = exercicio.tipo;
@@ -1081,7 +1854,13 @@ function renderizarExercicios() {
                 respostaCorreta.value = exercicio.resposta;
             }
 
+            tituloFormularioExercicio.textContent = "Editar exercício";
             formularioExercicio.style.display = "flex";
+
+            formularioExercicio.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
         });
         card.appendChild(editar);
 
@@ -1107,17 +1886,32 @@ document.getElementById("salvarExercicio").addEventListener("click", function ()
     const enunciado = enunciadoExercicio.value.trim();
 
     if (!materiaAtual) {
-        alert("Selecione uma matéria primeiro.");
+        mostrarErroExercicio("Selecione uma matéria antes de salvar o exercício.");
         return;
     }
 
     function mostrarErroExercicio(mensagem) {
         erroExercicio.textContent = mensagem;
         erroExercicio.classList.add("visivel");
+
+        erroExercicio.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
     }
 
-    if (!titulo || !enunciado) {
-        mostrarErroExercicio("Preencha o título e o enunciado da questão.");
+    if (!titulo && !enunciado) {
+        mostrarErroExercicio("O título e o enunciado da questão são obrigatórios. Preencha os dois campos.");
+        return;
+    }
+
+    if (!titulo) {
+        mostrarErroExercicio("O campo Título é obrigatório. Informe um título para o exercício.");
+        return;
+    }
+
+    if (!enunciado) {
+        mostrarErroExercicio("O campo Enunciado é obrigatório. Digite a pergunta que deseja praticar.");
         return;
     }
 
@@ -1191,6 +1985,10 @@ document.getElementById("salvarExercicio").addEventListener("click", function ()
     if (exercicioEmEdicao) {
         const indice = materiaAtual.exercicios.indexOf(exercicioEmEdicao);
 
+        if (!imagemExercicioAtual && !removerImagemExercicio) {
+            novoExercicio.imagem = exercicioEmEdicao.imagem;
+        }
+
         materiaAtual.exercicios[indice] = novoExercicio;
 
         exercicioEmEdicao = null;
@@ -1218,12 +2016,53 @@ document.getElementById("salvarExercicio").addEventListener("click", function ()
     respostaCorreta.value = "";
     imagemExercicio.value = "";
     previaImagemExercicio.innerHTML = "";
+    imagemExercicioAtual = null;
     document.querySelectorAll(".alternativa-exercicio").forEach(function (campo) {
         campo.value = "";
     });
 
     erroExercicio.classList.remove("visivel");
 });
+
+// SELETOR PERSONALIZADO - TIPO DE QUESTÃO
+botaoTipo.addEventListener("click", function () {
+    seletorTipo.classList.toggle("aberto");
+});
+
+function atualizarSeletorTipo() {
+    const opcaoSelecionada = tipoExercicio.options[tipoExercicio.selectedIndex];
+
+    textoTipo.textContent = opcaoSelecionada.textContent;
+
+    opcoesTipo.querySelectorAll("button").forEach(function (botao) {
+        botao.classList.toggle(
+            "selecionado",
+            botao.dataset.valor === tipoExercicio.value
+        );
+    });
+}
+
+opcoesTipo.querySelectorAll("button").forEach(function (botao) {
+    botao.addEventListener("click", function () {
+        tipoExercicio.value = botao.dataset.valor;
+
+        tipoExercicio.dispatchEvent(new Event("change"));
+
+        atualizarSeletorTipo();
+        seletorTipo.classList.remove("aberto");
+    });
+});
+
+tipoExercicio.addEventListener("change", atualizarSeletorTipo);
+
+document.addEventListener("click", function (evento) {
+    if (!seletorTipo.contains(evento.target)) {
+        seletorTipo.classList.remove("aberto");
+    }
+});
+
+atualizarSeletorTipo();
+
 
 // Alterar campos conforme o tipo de exercício
 tipoExercicio.addEventListener("change", function () {
