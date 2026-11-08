@@ -312,7 +312,8 @@ body {
 #cancelarApagar,
 #cancelarExcluirAnotacao,
 #cancelarExcluirExercicio,
-#cancelarExcluirTarefa {
+#cancelarExcluirTarefa,
+#cancelarExcluirConteudo {
     background-color: white;
     border: 1px solid #ddd;
     color: #555;
@@ -321,7 +322,8 @@ body {
 #confirmarApagar,
 #confirmarExcluirAnotacao,
 #confirmarExcluirExercicio,
-#confirmarExcluirTarefa {
+#confirmarExcluirTarefa,
+#confirmarExcluirConteudo {
     background-color: #e57373;
     border: none;
     color: white;
@@ -330,14 +332,16 @@ body {
 #cancelarApagar:hover,
 #cancelarExcluirAnotacao:hover,
 #cancelarExcluirExercicio:hover,
-#cancelarExcluirTarefa:hover {
+#cancelarExcluirTarefa:hover,
+#cancelarExcluirConteudo:hover {
     background-color: #f5f5f5;
 }
 
 #confirmarApagar:hover,
 #confirmarExcluirAnotacao:hover,
 #confirmarExcluirExercicio:hover,
-#confirmarExcluirTarefa:hover {
+#confirmarExcluirTarefa:hover,
+#confirmarExcluirConteudo:hover {
     background-color: #d85d5d;
 }
 
@@ -522,9 +526,6 @@ body {
     display: none;
 }
 
-.modal-excluir-conteudo {
-    display: none;
-}
 
 .conteudo-anotacao-editor {
     flex: 1;
@@ -1725,6 +1726,76 @@ body {
     border-radius: 12px;
 }
 
+.previa-conteudo {
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+.visualizador-card {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.visualizador-card iframe {
+    display: block;
+    max-width: 100%;
+    border-radius: 8px;
+}
+
+.visualizador-card button {
+    align-self: flex-start;
+    padding: 8px 12px;
+    border: 1px solid #f0d9b5;
+    border-radius: 8px;
+    background-color: #fff3df;
+    color: #9b682b;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.visualizador-card button:hover {
+    background-color: #ffe8c5;
+}
+
+.previa-conteudo img {
+    display: block;
+    max-width: 220px;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.previa-conteudo iframe {
+    display: block;
+    width: 220px;
+    height: 150px;
+    border: 1px solid #e5d8c6;
+    border-radius: 8px;
+    background-color: #fffaf2;
+}
+
+.cartao-conteudo .botao-editar-conteudo,
+.cartao-conteudo .botao-excluir-conteudo {
+    position: absolute;
+    top: 12px;
+    margin-top: 0;
+}
+
+.cartao-conteudo .botao-editar-conteudo {
+    right: 65px;
+}
+
+.cartao-conteudo .botao-excluir-conteudo {
+    right: 12px;
+}
+
 .cartao-conteudo h3 {
     margin: 0 0 8px;
     color: #514638;
@@ -1752,15 +1823,15 @@ body {
 }
 
 .cartao-conteudo button {
-    padding: 7px 12px;
-    border: 1px solid #f0d9b5;
-    border-radius: 8px;
     background-color: #fff3df;
     color: #9b682b;
+    border: 1px solid #f0d9b5;
+    border-radius: 8px;
+    padding: 7px 12px;
     font-size: 13px;
     cursor: pointer;
+    margin-top: 8px;
     margin-right: 6px;
-    transition: background-color 0.2s;
 }
 
 .cartao-conteudo button:hover {
