@@ -1230,17 +1230,62 @@ function renderizarConteudos() {
         const tipo = document.createElement("span");
         tipo.textContent = conteudo.tipo.toUpperCase();
 
+        const previaConteudo = document.createElement("div");
+        previaConteudo.classList.add("previa-conteudo");
+
+        const visualizadorCard = document.createElement("div");
+        visualizadorCard.classList.add("visualizador-card");
+        visualizadorCard.style.display = "none";
+
         const botaoVisualizar = document.createElement("button");
         botaoVisualizar.textContent = "Visualizar";
         botaoVisualizar.classList.add("botao-visualizar-conteudo");
 
+        previaConteudo.addEventListener("click", function () {
+            botaoVisualizar.click();
+        });
+
         const botaoEditar = document.createElement("button");
-        botaoEditar.textContent = "Editar";
+        botaoEditar.textContent = "✏️";
+        botaoEditar.title = "Editar conteúdo";
+        botaoEditar.setAttribute("aria-label", "Editar conteúdo");
         botaoEditar.classList.add("botao-editar-conteudo");
 
         const botaoExcluir = document.createElement("button");
-        botaoExcluir.textContent = "Excluir";
+        botaoExcluir.textContent = "🗑️";
+        botaoExcluir.title = "Excluir conteúdo";
+        botaoExcluir.setAttribute("aria-label", "Excluir conteúdo");
         botaoExcluir.classList.add("botao-excluir-conteudo");
+
+        if (conteudo.tipo === "imagem") {
+            const imagem = document.createElement("img");
+            imagem.src = conteudo.arquivo;
+            imagem.alt = conteudo.nome;
+
+            previaConteudo.appendChild(imagem);
+        }
+
+        if (conteudo.tipo === "pdf") {
+            const pdf = document.createElement("iframe");
+            pdf.src = conteudo.arquivo;
+            pdf.title = conteudo.nome;
+
+            previaConteudo.appendChild(pdf);
+        }
+
+        if (conteudo.tipo === "youtube") {
+            const videoId = conteudo.link.match(
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/
+            );
+
+            if (videoId) {
+                const miniatura = document.createElement("img");
+                miniatura.src = "https://img.youtube.com/vi/" + videoId[1] + "/hqdefault.jpg";
+                miniatura.alt = "Prévia do vídeo " + conteudo.nome;
+
+                previaConteudo.appendChild(miniatura);
+            }
+        }
 
         botaoExcluir.addEventListener("click", function () {
 
@@ -1278,16 +1323,30 @@ function renderizarConteudos() {
 
         botaoVisualizar.addEventListener("click", function () {
 
+            previaConteudo.style.display = "none";
+            visualizadorCard.innerHTML = "";
+            visualizadorCard.style.display = "flex";
+
+            const voltar = document.createElement("button");
+            voltar.textContent = "← Voltar à prévia";
+            voltar.addEventListener("click", function () {
+                visualizadorCard.style.display = "none";
+                previaConteudo.style.display = "block";
+                botaoVisualizar.style.display = "";
+            });
+
+            visualizadorCard.appendChild(voltar);
+
+            botaoVisualizar.style.display = "none";
+
             if (conteudo.tipo === "pdf") {
 
                 const arquivo = document.createElement("iframe");
                 arquivo.src = conteudo.arquivo;
                 arquivo.style.width = "100%";
-                arquivo.style.height = "75vh";
+                arquivo.style.height = "500px";
 
-                visualizacaoConteudo.appendChild(arquivo);
-
-                modalVisualizarConteudo.style.display = "flex";
+                visualizadorCard.appendChild(arquivo);
 
             }
 
@@ -1295,50 +1354,47 @@ function renderizarConteudos() {
 
                 const imagem = document.createElement("img");
                 imagem.src = conteudo.arquivo;
+                imagem.style.display = "block";
                 imagem.style.maxWidth = "100%";
-                imagem.style.maxHeight = "75vh";
+                imagem.style.maxHeight = "500px";
                 imagem.style.objectFit = "contain";
+                imagem.style.margin = "15px auto";
 
-                visualizacaoConteudo.appendChild(imagem);
-
-                modalVisualizarConteudo.style.display = "flex";
+                visualizadorCard.appendChild(imagem);
 
             }
 
             if (conteudo.tipo === "link") {
                 window.open(conteudo.link, "_blank");
+                visualizadorCard.style.display = "none";
+                previaConteudo.style.display = "block";
+                return;
             }
 
             if (conteudo.tipo === "youtube") {
 
                 const videoId = conteudo.link.match(
-                    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/
+                    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/
                 );
 
                 if (!videoId) {
                     const aviso = document.createElement("p");
-
-                    aviso.classList.add("erro-exercicio", "visivel");
                     aviso.textContent = "Endereço do YouTube inválido. Verifique o link e tente novamente.";
+                    aviso.classList.add("erro-exercicio", "visivel");
 
-                    visualizacaoConteudo.innerHTML = "";
-                    visualizacaoConteudo.appendChild(aviso);
-
-                    modalVisualizarConteudo.style.display = "flex";
-
+                    visualizadorCard.appendChild(aviso);
                     return;
                 }
 
                 const video = document.createElement("iframe");
                 video.src = "https://www.youtube.com/embed/" + videoId[1];
                 video.style.width = "100%";
-                video.style.height = "75vh";
+                video.style.aspectRatio = "16 / 9";
+                video.style.border = "none";
                 video.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
                 video.allowFullscreen = true;
 
-                visualizacaoConteudo.appendChild(video);
-
-                modalVisualizarConteudo.style.display = "flex";
+                visualizadorCard.appendChild(video);
 
             }
 
@@ -1347,6 +1403,8 @@ function renderizarConteudos() {
         cartao.appendChild(titulo);
         cartao.appendChild(descricao);
         cartao.appendChild(tipo);
+        cartao.appendChild(previaConteudo);
+        cartao.appendChild(visualizadorCard);
 
         cartao.appendChild(botaoVisualizar);
         cartao.appendChild(botaoEditar);
