@@ -15,6 +15,68 @@
 </head>
 
 <body>
+
+    <div class="tela-login" id="telaLogin">
+
+        <div class="card-login">
+
+            <img src="icone.png" alt="Write Study">
+
+            <h1>Write Study</h1>
+            <p>Organize seus estudos em um só lugar.</p>
+
+            <h2>Entrar</h2>
+
+            <label for="emailLogin">E-mail</label>
+            <input type="email" id="emailLogin" placeholder="Digite seu e-mail">
+
+            <label for="senhaLogin">Senha</label>
+            <input type="password" id="senhaLogin" placeholder="Digite sua senha">
+
+            <button type="button" id="btnEntrar">Entrar</button>
+            <p id="mensagemLogin"></p>
+
+            <p>
+                Ainda não tem uma conta?
+                <a href="#" id="irCadastro">Criar conta</a>
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="tela-cadastro" id="telaCadastro">
+
+        <div class="card-login">
+
+            <img src="icone.png" alt="Write Study">
+
+            <h1>Write Study</h1>
+            <p>Crie sua conta e organize seus estudos.</p>
+
+            <h2>Criar conta</h2>
+
+            <label for="nomeCadastro">Nome</label>
+            <input type="text" id="nomeCadastro" placeholder="Digite seu nome">
+
+            <label for="emailCadastro">E-mail</label>
+            <input type="email" id="emailCadastro" placeholder="Digite seu e-mail">
+
+            <label for="senhaCadastro">Senha</label>
+            <input type="password" id="senhaCadastro" placeholder="Crie uma senha">
+
+            <button type="button" id="btnCadastrar">Criar conta</button>
+            <p id="mensagemCadastro"></p>
+
+            <p>
+                Já tem uma conta?
+                <a href="#" id="irLogin">Entrar</a>
+            </p>
+
+        </div>
+
+    </div>
+
     <div class="layout">
 
         <aside class="sidebar">
@@ -356,6 +418,70 @@
                 <textarea class="anotacao" placeholder="09/11: Prova..."></textarea>
             </div>
 
+            <div class="area-configuracoes">
+
+                <button type="button" id="btnConfiguracoes">
+                    <span>⚙️ Configurações</span>
+                    <span id="setaConfiguracoes">⌄</span>
+                </button>
+
+                <div class="opcoes-configuracoes" id="opcoesConfiguracoes">
+
+                    <button type="button" id="btnConta">
+                        Minha conta
+                    </button>
+
+                    <button type="button" id="btnSair">
+                        Sair
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="fundo-modal" id="modalSair">
+
+                <div class="modal">
+
+                    <h2>Sair da conta?</h2>
+
+                    <p>Tem certeza de que deseja sair da sua conta?</p>
+
+                    <div class="botoes-modal">
+                        <button type="button" id="cancelarSair">Cancelar</button>
+                        <button type="button" id="confirmarSair">Sair</button>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Modal Minha Conta -->
+
+            <div class="fundo-modal" id="modalConta">
+
+                <div class="modal">
+
+                    <h2>Minha conta</h2>
+
+                    <div class="informacoes-conta">
+
+                        <p><strong>Nome:</strong></p>
+                        <p id="nomeUsuarioConta">Carregando...</p>
+
+                        <p><strong>E-mail:</strong></p>
+                        <p id="emailUsuarioConta">Carregando...</p>
+
+                    </div>
+
+                    <div class="botoes-modal">
+                        <button type="button" id="fecharModalConta">Fechar</button>
+                    </div>
+
+                </div>
+
+            </div>
+
         </aside>
 
     </div>
@@ -412,7 +538,7 @@
         </div>
     </div>
 
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
 
