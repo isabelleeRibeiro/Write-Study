@@ -231,6 +231,9 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    justify-content: space-between;
+    padding-bottom: 15px;
 }
 
 .bloco {
@@ -2042,4 +2045,218 @@ body {
 
 .area-conteudo::-webkit-scrollbar-thumb:hover {
     background-color: #d99a42;
+}
+
+/* Tela de login e cadastro */
+
+.tela-login,
+.tela-cadastro {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff8ed;
+}
+
+.card-login {
+    width: 350px;
+    padding: 35px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.10);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card-login img {
+    width: 75px;
+    height: 75px;
+    object-fit: contain;
+    align-self: center;
+}
+
+.card-login h1,
+.card-login h2,
+.card-login p {
+    text-align: center;
+    margin: 0;
+}
+
+.card-login h1 {
+    color: #f5a623;
+}
+
+.card-login label {
+    font-weight: bold;
+}
+
+.card-login input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    font-size: 14px;
+}
+
+.card-login button {
+    padding: 12px;
+    border: none;
+    border-radius: 7px;
+    background-color: #f5a623;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.card-login a {
+    color: #f5a623;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.tela-cadastro {
+    display: none;
+}
+
+.layout {
+    display: none;
+}
+
+.card-login {
+    font-family: Arial, sans-serif;
+}
+
+.card-login h1,
+.card-login h2 {
+    font-family: 'Caveat', cursive;
+}
+
+.card-login h1 {
+    font-size: 42px;
+}
+
+.card-login h2 {
+    font-size: 32px;
+}
+
+.card-login p {
+    font-size: 15px;
+}
+
+.card-login label {
+    font-size: 14px;
+}
+
+.card-login input {
+    border: 1px solid #eadfce;
+    outline: none;
+}
+
+.card-login input:focus {
+    border-color: #f5a623;
+    box-shadow: 0 0 0 2px rgba(245, 166, 35, 0.15);
+}
+
+/* Área de configurações */
+
+.area-configuracoes {
+    margin-top: auto;
+    width: 100%;
+    position: relative;
+}
+
+#btnConfiguracoes {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border: none;
+    border-top: 1px solid #e8c995;
+    background: transparent;
+    color: #5c4630;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.opcoes-configuracoes {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px 12px;
+}
+
+.opcoes-configuracoes button {
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #5c4630;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.opcoes-configuracoes button:hover,
+#btnConfiguracoes:hover {
+    background-color: #f8e8ce;
+}
+
+/* Botões do modal de logout */
+
+#cancelarSair,
+#confirmarSair {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+#cancelarSair {
+    background-color: #f3e8d7;
+    color: #765b3c;
+}
+
+#cancelarSair:hover {
+    background-color: #e9d8bf;
+}
+
+#confirmarSair {
+    background-color: #f5a623;
+    color: #ffffff;
+}
+
+#confirmarSair:hover {
+    background-color: #df941b;
+}
+
+#cancelarSair:active,
+#confirmarSair:active {
+    transform: scale(0.97);
+}
+
+/* Botão Fechar - Minha Conta */
+
+#fecharModalConta {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    background-color: #f5a623;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+#fecharModalConta:hover {
+    background-color: #df941b;
+}
+
+#fecharModalConta:active {
+    transform: scale(0.97);
 }
