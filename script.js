@@ -1,3 +1,13 @@
+// Conexão com o Supabase
+const SUPABASE_URL = "https://gzxjnzkcohugjvbqgtmh.supabase.co";
+const SUPABASE_KEY = "sb_publishable_gntRhs-mmLcR_F35gyg7XQ_iOvIe3af";
+
+const clienteSupabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
 const botao = document.getElementById("adicionarMateria");
 const campo = document.getElementById("novaMateria");
 const input = document.getElementById("nomeMateria");
@@ -122,6 +132,7 @@ let materiaParaApagar = null;
 let tarefaEmEdicao = null;
 let exercicioEmEdicao = null;
 let conteudoEmEdicao = null;
+let arquivoAntigoConteudo = null;
 
 let exercicioParaExcluir = null;
 
@@ -130,6 +141,18 @@ let imagemExercicioAtual = null;
 let removerImagemExercicio = false;
 
 let conteudoParaExcluir = null;
+
+let temporizadorAnotacao;
+
+function agendarSalvamentoAnotacao() {
+
+    clearTimeout(temporizadorAnotacao);
+
+    temporizadorAnotacao = setTimeout(function () {
+        salvarCamposAtuais();
+    }, 1000);
+
+}
 
 arquivoConteudo.addEventListener("change", function () {
     const arquivo = arquivoConteudo.files[0];
@@ -183,6 +206,11 @@ arquivoConteudo.addEventListener("change", function () {
 removerArquivoConteudo.addEventListener("click", function () {
     arquivoConteudo.value = "";
     arquivoConteudoAtual = null;
+
+    if (conteudoEmEdicao) {
+        conteudoEmEdicao.arquivo_url = null;
+        conteudoEmEdicao.arquivo = null;
+    }
 
     previaArquivoConteudo.innerHTML = "";
     previaArquivoConteudo.style.display = "none";
@@ -251,9 +279,31 @@ cancelarExcluirConteudo.addEventListener("click", function () {
 
 });
 
-confirmarExcluirConteudo.addEventListener("click", function () {
+confirmarExcluirConteudo.addEventListener("click", async function () {
 
     if (conteudoParaExcluir) {
+        const { error } = await clienteSupabase
+            .from("conteudos")
+            .delete()
+            .eq("id", conteudoParaExcluir.id);
+
+        if (error) {
+            console.error("Erro ao excluir conteúdo:", error);
+            alert("Não foi possível excluir o conteúdo.");
+            return;
+        }
+
+        if (conteudoParaExcluir.arquivo_url) {
+
+            const { error: erroArquivo } = await clienteSupabase.storage
+                .from("arquivos-write-study")
+                .remove([conteudoParaExcluir.arquivo_url]);
+
+            if (erroArquivo) {
+                console.error("Erro ao excluir arquivo:", erroArquivo);
+            }
+
+        }
 
         materiaAtual.conteudos = materiaAtual.conteudos.filter(function (conteudo) {
             return conteudo.id !== conteudoParaExcluir.id;
@@ -426,26 +476,94 @@ salvarConteudo.addEventListener("click", async function () {
         arquivo: conteudoEmEdicao && conteudoEmEdicao.tipo === tipo
             ? conteudoEmEdicao.arquivo
             : null,
+
+        arquivo_url: conteudoEmEdicao && conteudoEmEdicao.tipo === tipo
+            ? conteudoEmEdicao.arquivo_url
+            : null,
+
         link: linkConteudo.value.trim()
     };
 
-    function concluirSalvamentoConteudo() {
+    const arquivoAntigo = conteudoEmEdicao
+        ? arquivoAntigoConteudo
+        : null;
+
+    async function concluirSalvamentoConteudo() {
 
         if (conteudoEmEdicao) {
+
+            const { error } = await clienteSupabase
+                .from("conteudos")
+                .update({
+                    nome: novoConteudo.nome,
+                    descricao: novoConteudo.descricao,
+                    tipo: novoConteudo.tipo,
+                    arquivo_url: novoConteudo.arquivo_url,
+                    link: novoConteudo.link
+                })
+                .eq("id", conteudoEmEdicao.id);
+
+            if (error) {
+                console.error("Erro ao atualizar conteúdo:", error);
+                mostrarErroConteudo("Não foi possível atualizar o conteúdo.");
+                return;
+            }
 
             const indice = materiaAtual.conteudos.findIndex(function (item) {
                 return item.id === conteudoEmEdicao.id;
             });
 
+            if (!novoConteudo.arquivo_url) {
+                novoConteudo.arquivo = null;
+            }
+
             if (indice !== -1) {
                 materiaAtual.conteudos[indice] = novoConteudo;
             }
 
+            if (
+                arquivoAntigo &&
+                arquivoAntigo !== novoConteudo.arquivo_url
+            ) {
+
+                const { error: erroArquivoAntigo } = await clienteSupabase.storage
+                    .from("arquivos-write-study")
+                    .remove([arquivoAntigo]);
+
+                if (erroArquivoAntigo) {
+                    console.error("Erro ao remover arquivo antigo:", erroArquivoAntigo);
+                }
+
+            }
+
         } else {
+
+            const { data, error } = await clienteSupabase
+                .from("conteudos")
+                .insert({
+                    materia_id: materiaAtual.dataset.id,
+                    nome: novoConteudo.nome,
+                    descricao: novoConteudo.descricao,
+                    tipo: novoConteudo.tipo,
+                    arquivo_url: novoConteudo.arquivo_url,
+                    link: novoConteudo.link
+                })
+                .select()
+                .single();
+
+            if (error) {
+                console.error("Erro ao salvar conteúdo:", error);
+                mostrarErroConteudo("Não foi possível salvar o conteúdo.");
+                return;
+            }
+
+            novoConteudo.id = data.id;
             materiaAtual.conteudos.push(novoConteudo);
+
         }
 
         conteudoEmEdicao = null;
+
 
         renderizarConteudos();
 
@@ -472,21 +590,33 @@ salvarConteudo.addEventListener("click", async function () {
 
         if (arquivo) {
 
-            const leitor = new FileReader();
+            try {
 
-            leitor.onload = function () {
+                novoConteudo.arquivo_url = await enviarArquivoConteudo(arquivo);
 
-                novoConteudo.arquivo = leitor.result;
+                const { data, error } = await clienteSupabase.storage
+                    .from("arquivos-write-study")
+                    .createSignedUrl(novoConteudo.arquivo_url, 3600);
 
-                concluirSalvamentoConteudo();
+                if (error) {
+                    throw error;
+                }
 
-            };
+                novoConteudo.arquivo = data.signedUrl;
 
-            leitor.readAsDataURL(arquivo);
+            } catch (erro) {
+
+                console.error("Erro ao enviar arquivo:", erro);
+                mostrarErroConteudo("Não foi possível enviar o arquivo.");
+                return;
+
+            }
+
+            await concluirSalvamentoConteudo();
 
         } else {
 
-            concluirSalvamentoConteudo();
+            await concluirSalvamentoConteudo();
 
         }
 
@@ -494,7 +624,7 @@ salvarConteudo.addEventListener("click", async function () {
 
     if (tipo === "youtube" || tipo === "link") {
 
-        concluirSalvamentoConteudo();
+        await concluirSalvamentoConteudo();
 
     }
 
@@ -508,8 +638,22 @@ botao.addEventListener("click", function () {
 
 
 // Cria uma nova matéria
-function criarMateria() {
-    const materia = input.value.trim();
+async function criarMateria(nomeMateria = null, idMateria = null) {
+    const materia = nomeMateria || input.value.trim();
+
+    let user = null;
+
+    if (!nomeMateria) {
+        const { data, error: erroUsuario } =
+            await clienteSupabase.auth.getUser();
+
+        if (erroUsuario || !data.user) {
+            alert("Não foi possível identificar sua conta.");
+            return;
+        }
+
+        user = data.user;
+    }
 
     if (materia === "") {
         input.focus();
@@ -566,7 +710,7 @@ function criarMateria() {
         botaoOpcao.textContent = opcao;
         botaoOpcao.type = "button";
 
-        botaoOpcao.addEventListener("click", function (evento) {
+        botaoOpcao.addEventListener("click", async function (evento) {
             evento.stopPropagation();
 
 
@@ -625,11 +769,22 @@ function criarMateria() {
                 cancelarEdicao.classList.add("cancelar-nome-materia");
                 cancelarEdicao.textContent = "Cancelar";
 
-                function salvarNome() {
+                async function salvarNome() {
                     const novoNome = campoNome.value.trim();
 
                     if (novoNome === "") {
                         campoNome.focus();
+                        return;
+                    }
+
+                    // Atualiza o nome no Supabase
+                    const { error } = await clienteSupabase
+                        .from("materias")
+                        .update({ nome: novoNome })
+                        .eq("id", novaMateria.dataset.id);
+
+                    if (error) {
+                        alert("Não foi possível renomear a matéria.");
                         return;
                     }
 
@@ -692,6 +847,8 @@ function criarMateria() {
                     return;
                 }
 
+                await salvarCamposAtuais();
+
                 // Abre as anotações da matéria selecionada
                 inicio.style.display = "none";
                 areaConteudo.style.display = "none";
@@ -700,8 +857,7 @@ function criarMateria() {
                 materiaAtual = novaMateria;
                 anotacaoAtual = null;
 
-                renderizarAnotacoes();
-                mostrarEditorVazio();
+                await carregarAnotacoes();
             }
 
 
@@ -727,7 +883,8 @@ function criarMateria() {
                 anotacaoAtual = null;
 
                 listaTarefas.innerHTML = "";
-                renderizarTarefas();
+                await carregarTarefas();
+                await carregarExercicios();
 
                 listaExercicios.innerHTML = "";
                 renderizarExercicios();
@@ -757,7 +914,8 @@ function criarMateria() {
 
                 materiaAtual = novaMateria;
                 anotacaoAtual = null;
-                renderizarConteudos();
+                listaConteudos.innerHTML = "";
+                await carregarConteudos();
 
                 listaAnotacoes.innerHTML = "";
                 mostrarEditorVazio();
@@ -823,6 +981,28 @@ function criarMateria() {
         modal.style.display = "flex";
     });
 
+    // Salva a matéria no Supabase somente se for nova
+    if (!idMateria) {
+
+        const { data, error } = await clienteSupabase
+            .from("materias")
+            .insert({
+                user_id: user.id,
+                nome: materia
+            })
+            .select()
+            .single();
+
+        if (error) {
+            alert("Erro ao salvar matéria: " + error.message);
+            return;
+        }
+
+        idMateria = data.id;
+    }
+
+    novaMateria.dataset.id = idMateria;
+
     // Adiciona a matéria à lista
     lista.appendChild(novaMateria);
 
@@ -831,9 +1011,38 @@ function criarMateria() {
     campo.style.display = "none";
 }
 
+// Carrega as matérias salvas no Supabase
+async function carregarMaterias() {
+    lista.innerHTML = "";
+
+    const { data: dadosUsuario, error: erroUsuario } =
+        await clienteSupabase.auth.getUser();
+
+    if (erroUsuario || !dadosUsuario.user) {
+        console.error("Não foi possível identificar o usuário.");
+        return;
+    }
+
+    const { data, error } = await clienteSupabase
+        .from("materias")
+        .select("*")
+        .eq("user_id", dadosUsuario.user.id)
+        .order("created_at", { ascending: true });
+
+    if (error) {
+        console.error("Erro ao carregar matérias:", error);
+        return;
+    }
+
+    data.forEach(function (materia) {
+        criarMateria(materia.nome, materia.id);
+    });
+}
 
 // Confirma a criação pelo botão Adicionar
-confirmarMateria.addEventListener("click", criarMateria);
+confirmarMateria.addEventListener("click", function () {
+    criarMateria();
+});
 
 
 // Também permite criar a matéria apertando Enter
@@ -866,7 +1075,7 @@ cancelarApagar.addEventListener("click", function () {
 
 
 // Confirma a exclusão da matéria
-confirmarApagar.addEventListener("click", function () {
+confirmarApagar.addEventListener("click", async function () {
     if (materiaParaApagar) {
 
         // Verifica se a matéria apagada está aberta nas anotações
@@ -874,12 +1083,24 @@ confirmarApagar.addEventListener("click", function () {
             areaAnotacoes.style.display = "none";
             inicio.style.display = "flex";
             areaAtividades.style.display = "none";
+            document.getElementById("areaConteudo").style.display = "none";
 
             materiaAtual = null;
             anotacaoAtual = null;
 
             listaAnotacoes.innerHTML = "";
             mostrarEditorVazio();
+        }
+
+        // Exclui a matéria do Supabase
+        const { error } = await clienteSupabase
+            .from("materias")
+            .delete()
+            .eq("id", materiaParaApagar.dataset.id);
+
+        if (error) {
+            alert("Não foi possível excluir a matéria.");
+            return;
         }
 
         // Remove a matéria da lista
@@ -900,6 +1121,34 @@ function mostrarEditorVazio() {
     `;
 }
 
+async function carregarAnotacoes() {
+
+    if (!materiaAtual) return;
+
+    const { data, error } = await clienteSupabase
+        .from("anotacoes")
+        .select("*")
+        .eq("materia_id", materiaAtual.dataset.id)
+        .order("created_at", { ascending: true });
+
+    if (error) {
+        console.error("Erro ao carregar anotações:", error);
+        return;
+    }
+
+    materiaAtual.anotacoes = data.map(function (anotacao) {
+        return {
+            id: anotacao.id,
+            titulo: anotacao.titulo,
+            texto: anotacao.texto
+        };
+    });
+
+    anotacaoAtual = null;
+    renderizarAnotacoes();
+    mostrarEditorVazio();
+}
+
 function renderizarAnotacoes() {
     listaAnotacoes.innerHTML = "";
 
@@ -918,8 +1167,8 @@ function renderizarAnotacoes() {
         selecionar.textContent = anotacao.titulo || "Nova anotação";
         selecionar.type = "button";
 
-        selecionar.addEventListener("click", function () {
-            salvarCamposAtuais();
+        selecionar.addEventListener("click", async function () {
+            await salvarCamposAtuais();
             anotacaoAtual = anotacao;
             renderizarAnotacoes();
             abrirEditor();
@@ -942,12 +1191,29 @@ function renderizarAnotacoes() {
     });
 }
 
-function criarAnotacao() {
+async function criarAnotacao() {
     if (!materiaAtual) return;
+
+    // Salva a nova anotação no Supabase
+    const { data, error } = await clienteSupabase
+        .from("anotacoes")
+        .insert({
+            materia_id: materiaAtual.dataset.id,
+            titulo: "",
+            texto: ""
+        })
+        .select()
+        .single();
+
+    if (error) {
+        alert("Erro ao criar anotação: " + error.message);
+        return;
+    }
 
     const nova = {
         titulo: "",
-        texto: ""
+        texto: "",
+        id: data.id
     };
 
     materiaAtual.anotacoes.push(nova);
@@ -961,6 +1227,9 @@ function criarAnotacao() {
 
 
 function abrirEditor() {
+
+    clearTimeout(temporizadorAnotacao);
+
     if (!anotacaoAtual) {
         mostrarEditorVazio();
         return;
@@ -984,7 +1253,8 @@ function abrirEditor() {
         { comando: "bold", simbolo: "B", titulo: "Negrito" },
         { comando: "italic", simbolo: "I", titulo: "Itálico" },
         { comando: "underline", simbolo: "U", titulo: "Sublinhado" },
-        { comando: "highlight", simbolo: "🖍️", titulo: "Marca-texto amarelo" }
+        { comando: "highlight", simbolo: "🖍️", titulo: "Marca-texto amarelo" },
+        { comando: "removeFormat", imagem: "borracha.png", titulo: "Limpar formatação" }
     ];
 
     // Área de escrita formatada
@@ -1002,7 +1272,20 @@ function abrirEditor() {
         const botaoFerramenta = document.createElement("button");
         botaoFerramenta.type = "button";
         botaoFerramenta.classList.add("botao-ferramenta");
-        botaoFerramenta.textContent = item.simbolo;
+        if (item.imagem) {
+            const imagem = document.createElement("img");
+            imagem.src = item.imagem;
+
+            imagem.style.display = "block";
+            imagem.alt = item.titulo;
+            imagem.style.width = "18px";
+            imagem.style.height = "18px";
+            imagem.style.objectFit = "contain";
+
+            botaoFerramenta.appendChild(imagem);
+        } else {
+            botaoFerramenta.textContent = item.simbolo;
+        }
         botaoFerramenta.title = item.titulo;
         botaoFerramenta.setAttribute("aria-label", item.titulo);
 
@@ -1023,12 +1306,14 @@ function abrirEditor() {
         });
 
 
-
-
-
-
         botaoFerramenta.addEventListener("click", function () {
             texto.focus();
+
+            if (item.comando === "removeFormat") {
+                document.execCommand("removeFormat", false, null);
+                anotacaoAtual.texto = texto.innerHTML;
+                return;
+            }
 
             if (item.comando === "highlight") {
                 const selecao = window.getSelection();
@@ -1065,20 +1350,18 @@ function abrirEditor() {
         });
 
 
-
-
-
-
         ferramentas.appendChild(botaoFerramenta);
     });
 
     titulo.addEventListener("input", function () {
         anotacaoAtual.titulo = titulo.value;
         atualizarTituloNaLista();
+        agendarSalvamentoAnotacao();
     });
 
     texto.addEventListener("input", function () {
         anotacaoAtual.texto = texto.innerHTML;
+        agendarSalvamentoAnotacao();
     });
 
     editorAnotacao.appendChild(titulo);
@@ -1087,8 +1370,7 @@ function abrirEditor() {
 }
 
 
-
-function salvarCamposAtuais() {
+async function salvarCamposAtuais() {
     if (!anotacaoAtual) return;
 
     const titulo = document.getElementById("tituloAnotacaoEditor");
@@ -1096,6 +1378,19 @@ function salvarCamposAtuais() {
 
     if (titulo) anotacaoAtual.titulo = titulo.value;
     if (texto) anotacaoAtual.texto = texto.innerHTML;
+
+    // Atualiza a anotação no Supabase
+    const { error } = await clienteSupabase
+        .from("anotacoes")
+        .update({
+            titulo: anotacaoAtual.titulo,
+            texto: anotacaoAtual.texto
+        })
+        .eq("id", anotacaoAtual.id);
+
+    if (error) {
+        console.error("Erro ao atualizar anotação:", error);
+    }
 }
 
 
@@ -1103,9 +1398,9 @@ function atualizarTituloNaLista() {
     renderizarAnotacoes();
 }
 
-botaoNovaAnotacao.addEventListener("click", function () {
-    salvarCamposAtuais();
-    criarAnotacao();
+botaoNovaAnotacao.addEventListener("click", async function () {
+    await salvarCamposAtuais();
+    await criarAnotacao();
 });
 
 cancelarExcluirAnotacao.addEventListener("click", function () {
@@ -1113,8 +1408,18 @@ cancelarExcluirAnotacao.addEventListener("click", function () {
     anotacaoParaApagar = null;
 });
 
-confirmarExcluirAnotacao.addEventListener("click", function () {
+confirmarExcluirAnotacao.addEventListener("click", async function () {
     if (materiaAtual && anotacaoParaApagar) {
+        const { error } = await clienteSupabase
+            .from("anotacoes")
+            .delete()
+            .eq("id", anotacaoParaApagar.id);
+
+        if (error) {
+            alert("Não foi possível excluir a anotação.");
+            return;
+        }
+
         materiaAtual.anotacoes =
             materiaAtual.anotacoes.filter(function (anotacao) {
                 return anotacao !== anotacaoParaApagar;
@@ -1156,7 +1461,7 @@ cancelarTarefa.addEventListener("click", function () {
 
 
 
-salvarTarefa.addEventListener("click", function () {
+salvarTarefa.addEventListener("click", async function () {
     const titulo = tituloTarefa.value.trim();
     const descricao = descricaoTarefa.value.trim();
     const prazo = prazoTarefa.value;
@@ -1186,13 +1491,48 @@ salvarTarefa.addEventListener("click", function () {
         tarefaEmEdicao.titulo = titulo;
         tarefaEmEdicao.descricao = descricao;
         tarefaEmEdicao.prazo = prazo;
+
+        const { error } = await clienteSupabase
+            .from("tarefas")
+            .update({
+                titulo: titulo,
+                descricao: descricao,
+                prazo: prazo || null
+            })
+            .eq("id", tarefaEmEdicao.id);
+
+        if (error) {
+            console.error("Erro ao atualizar tarefa:", error);
+            alert("Não foi possível atualizar a tarefa.");
+            return;
+        }
+
     } else {
-        // Cria uma nova tarefa
+        // Cria uma nova tarefa no Supabase
+        const { data, error } = await clienteSupabase
+            .from("tarefas")
+            .insert({
+                materia_id: materiaAtual.dataset.id,
+                titulo: titulo,
+                descricao: descricao,
+                prazo: prazo || null,
+                concluida: false
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error("Erro ao salvar tarefa:", error);
+            alert("Não foi possível salvar a tarefa.");
+            return;
+        }
+
         if (!materiaAtual.tarefas) {
             materiaAtual.tarefas = [];
         }
 
         materiaAtual.tarefas.push({
+            id: data.id,
             titulo: titulo,
             descricao: descricao,
             prazo: prazo,
@@ -1209,6 +1549,46 @@ salvarTarefa.addEventListener("click", function () {
     descricaoTarefa.value = "";
     prazoTarefa.value = "";
 });
+
+async function enviarArquivoConteudo(arquivo) {
+
+    const { data: dadosUsuario, error: erroUsuario } =
+        await clienteSupabase.auth.getUser();
+
+    if (erroUsuario || !dadosUsuario.user) {
+        throw new Error("Não foi possível identificar o usuário.");
+    }
+
+    const extensao = arquivo.name.split(".").pop();
+
+    const caminho = `${dadosUsuario.user.id}/${materiaAtual.dataset.id}/${crypto.randomUUID()}.${extensao}`;
+
+    const { error } = await clienteSupabase.storage
+        .from("arquivos-write-study")
+        .upload(caminho, arquivo);
+
+    if (error) {
+        throw error;
+    }
+
+    return caminho;
+}
+
+async function obterUrlArquivoConteudo(caminho) {
+
+    if (!caminho) return null;
+
+    const { data, error } = await clienteSupabase.storage
+        .from("arquivos-write-study")
+        .createSignedUrl(caminho, 3600);
+
+    if (error) {
+        console.error("Erro ao gerar URL do arquivo:", error);
+        return null;
+    }
+
+    return data.signedUrl;
+}
 
 function renderizarConteudos() {
 
@@ -1298,6 +1678,7 @@ function renderizarConteudos() {
         botaoEditar.addEventListener("click", function () {
 
             conteudoEmEdicao = conteudo;
+            arquivoAntigoConteudo = conteudo.arquivo_url;
 
             nomeConteudo.value = conteudo.nome;
             descricaoConteudo.value = conteudo.descricao;
@@ -1416,6 +1797,129 @@ function renderizarConteudos() {
 
 }
 
+async function carregarTarefas() {
+
+    if (!materiaAtual) return;
+
+    const { data, error } = await clienteSupabase
+        .from("tarefas")
+        .select("*")
+        .eq("materia_id", materiaAtual.dataset.id)
+        .order("created_at", { ascending: true });
+
+    if (error) {
+        console.error("Erro ao carregar tarefas:", error);
+        return;
+    }
+
+    materiaAtual.tarefas = data.map(function (tarefa) {
+        return {
+            id: tarefa.id,
+            titulo: tarefa.titulo,
+            descricao: tarefa.descricao,
+            prazo: tarefa.prazo,
+            concluida: tarefa.concluida
+        };
+    });
+
+    renderizarTarefas();
+}
+
+async function carregarExercicios() {
+
+    if (!materiaAtual) return;
+
+    const { data, error } = await clienteSupabase
+        .from("exercicios")
+        .select("*")
+        .eq("materia_id", materiaAtual.dataset.id)
+        .order("created_at", { ascending: true });
+
+    if (error) {
+        console.error("Erro ao carregar exercícios:", error);
+        return;
+    }
+
+    materiaAtual.exercicios = [];
+
+    for (const exercicio of data) {
+
+        const imagem = await obterUrlImagemExercicio(
+            exercicio.imagem_url
+        );
+
+        materiaAtual.exercicios.push({
+            id: exercicio.id,
+            titulo: exercicio.titulo,
+            enunciado: exercicio.enunciado,
+            tipo: exercicio.tipo,
+            resposta: exercicio.resposta,
+            alternativas: exercicio.alternativas || [],
+            imagem: imagem,
+            imagem_url: exercicio.imagem_url
+        });
+
+    }
+
+    renderizarExercicios();
+}
+
+async function carregarConteudos() {
+
+    if (!materiaAtual) return;
+
+    const { data, error } = await clienteSupabase
+        .from("conteudos")
+        .select("*")
+        .eq("materia_id", materiaAtual.dataset.id)
+        .order("created_at", { ascending: true });
+
+    if (error) {
+        console.error("Erro ao carregar conteúdos:", error);
+        return;
+    }
+
+    materiaAtual.conteudos = [];
+
+    for (const conteudo of data) {
+
+        let arquivo = null;
+
+        if (conteudo.tipo === "pdf" || conteudo.tipo === "imagem") {
+            arquivo = await obterUrlArquivoConteudo(conteudo.arquivo_url);
+        }
+
+        materiaAtual.conteudos.push({
+            id: conteudo.id,
+            nome: conteudo.nome,
+            descricao: conteudo.descricao,
+            tipo: conteudo.tipo,
+            arquivo: arquivo,
+            arquivo_url: conteudo.arquivo_url,
+            link: conteudo.link
+        });
+
+    }
+
+    renderizarConteudos();
+}
+
+async function obterUrlImagemExercicio(caminho) {
+
+    if (!caminho) return null;
+
+    const { data, error } = await clienteSupabase.storage
+        .from("arquivos-write-study")
+        .createSignedUrl(caminho, 3600);
+
+    if (error) {
+        console.error("Erro ao gerar URL da imagem:", error);
+        return null;
+    }
+
+    return data.signedUrl;
+}
+
 function renderizarTarefas() {
     listaTarefas.innerHTML = "";
 
@@ -1462,8 +1966,22 @@ function renderizarTarefas() {
         }
 
 
-        checkbox.addEventListener("change", function () {
+        checkbox.addEventListener("change", async function () {
             tarefa.concluida = checkbox.checked;
+
+            const { error } = await clienteSupabase
+                .from("tarefas")
+                .update({
+                    concluida: tarefa.concluida
+                })
+                .eq("id", tarefa.id);
+
+            if (error) {
+                console.error("Erro ao atualizar conclusão:", error);
+                alert("Não foi possível atualizar a tarefa.");
+                tarefa.concluida = !checkbox.checked;
+            }
+
             renderizarTarefas();
         });
 
@@ -1526,8 +2044,18 @@ cancelarExcluirTarefa.addEventListener("click", function () {
     materiaDaTarefaParaApagar = null;
 });
 
-confirmarExcluirTarefa.addEventListener("click", function () {
+confirmarExcluirTarefa.addEventListener("click", async function () {
     if (tarefaParaApagar && materiaDaTarefaParaApagar) {
+        const { error } = await clienteSupabase
+            .from("tarefas")
+            .delete()
+            .eq("id", tarefaParaApagar.id);
+
+        if (error) {
+            console.error("Erro ao excluir tarefa:", error);
+            alert("Não foi possível excluir a tarefa.");
+            return;
+        }
         materiaDaTarefaParaApagar.tarefas =
             materiaDaTarefaParaApagar.tarefas.filter(function (tarefa) {
                 return tarefa !== tarefaParaApagar;
@@ -1627,6 +2155,30 @@ cancelarExercicio.addEventListener("click", function () {
 
     erroExercicio.classList.remove("visivel");
 });
+
+async function enviarImagemExercicio(arquivo) {
+
+    const { data: dadosUsuario, error: erroUsuario } =
+        await clienteSupabase.auth.getUser();
+
+    if (erroUsuario || !dadosUsuario.user) {
+        throw new Error("Não foi possível identificar o usuário.");
+    }
+
+    const extensao = arquivo.name.split(".").pop();
+
+    const caminho = `${dadosUsuario.user.id}/${materiaAtual.dataset.id}/${crypto.randomUUID()}.${extensao}`;
+
+    const { error } = await clienteSupabase.storage
+        .from("arquivos-write-study")
+        .upload(caminho, arquivo);
+
+    if (error) {
+        throw error;
+    }
+
+    return caminho;
+}
 
 function renderizarExercicios() {
     listaExercicios.innerHTML = "";
@@ -1939,7 +2491,7 @@ function renderizarExercicios() {
 }
 
 // Salvar exercício
-document.getElementById("salvarExercicio").addEventListener("click", function () {
+document.getElementById("salvarExercicio").addEventListener("click", async function () {
     const titulo = tituloExercicio.value.trim();
     const enunciado = enunciadoExercicio.value.trim();
 
@@ -2022,6 +2574,20 @@ document.getElementById("salvarExercicio").addEventListener("click", function ()
         materiaAtual.exercicios = [];
     }
 
+    let caminhoImagem = null;
+
+    if (imagemExercicio.files[0]) {
+        try {
+            caminhoImagem = await enviarImagemExercicio(
+                imagemExercicio.files[0]
+            );
+        } catch (erro) {
+            console.error("Erro ao enviar imagem:", erro);
+            mostrarErroExercicio("Não foi possível enviar a imagem.");
+            return;
+        }
+    }
+
     const novoExercicio = {
         titulo: titulo,
         enunciado: enunciado,
@@ -2037,20 +2603,64 @@ document.getElementById("salvarExercicio").addEventListener("click", function ()
             return campo.value.trim();
         }),
 
-        imagem: imagemExercicioAtual
+        imagem: imagemExercicioAtual,
+        imagem_url: caminhoImagem
     };
 
     if (exercicioEmEdicao) {
         const indice = materiaAtual.exercicios.indexOf(exercicioEmEdicao);
+        if (!caminhoImagem && !removerImagemExercicio) {
+            novoExercicio.imagem_url = exercicioEmEdicao.imagem_url;
+        }
 
         if (!imagemExercicioAtual && !removerImagemExercicio) {
             novoExercicio.imagem = exercicioEmEdicao.imagem;
+        }
+
+        const { error } = await clienteSupabase
+            .from("exercicios")
+            .update({
+                titulo: novoExercicio.titulo,
+                enunciado: novoExercicio.enunciado,
+                tipo: novoExercicio.tipo,
+                resposta: novoExercicio.resposta,
+                alternativas: novoExercicio.alternativas,
+                imagem_url: novoExercicio.imagem_url
+            })
+            .eq("id", exercicioEmEdicao.id);
+
+        if (error) {
+            console.error("Erro ao atualizar exercício:", error);
+            mostrarErroExercicio("Não foi possível atualizar o exercício.");
+            return;
         }
 
         materiaAtual.exercicios[indice] = novoExercicio;
 
         exercicioEmEdicao = null;
     } else {
+
+        const { data, error } = await clienteSupabase
+            .from("exercicios")
+            .insert({
+                materia_id: materiaAtual.dataset.id,
+                titulo: novoExercicio.titulo,
+                enunciado: novoExercicio.enunciado,
+                tipo: novoExercicio.tipo,
+                resposta: novoExercicio.resposta,
+                alternativas: novoExercicio.alternativas,
+                imagem_url: novoExercicio.imagem_url
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error("Erro ao salvar exercício:", error);
+            mostrarErroExercicio("Não foi possível salvar o exercício.");
+            return;
+        }
+
+        novoExercicio.id = data.id;
         materiaAtual.exercicios.push(novoExercicio);
     }
 
@@ -2168,9 +2778,30 @@ cancelarExcluirExercicio.addEventListener("click", function () {
     exercicioParaExcluir = null;
 });
 
-confirmarExcluirExercicio.addEventListener("click", function () {
+confirmarExcluirExercicio.addEventListener("click", async function () {
     if (exercicioParaExcluir) {
         const indice = materiaAtual.exercicios.indexOf(exercicioParaExcluir);
+        const { error } = await clienteSupabase
+            .from("exercicios")
+            .delete()
+            .eq("id", exercicioParaExcluir.id);
+
+        if (exercicioParaExcluir.imagem_url) {
+
+            const { error: erroImagem } = await clienteSupabase.storage
+                .from("arquivos-write-study")
+                .remove([exercicioParaExcluir.imagem_url]);
+
+            if (erroImagem) {
+                console.error("Erro ao excluir imagem:", erroImagem);
+            }
+        }
+
+        if (error) {
+            console.error("Erro ao excluir exercício:", error);
+            alert("Não foi possível excluir o exercício.");
+            return;
+        }
 
         if (indice !== -1) {
             materiaAtual.exercicios.splice(indice, 1);
@@ -2181,4 +2812,214 @@ confirmarExcluirExercicio.addEventListener("click", function () {
 
     modalExcluirExercicio.style.display = "none";
     exercicioParaExcluir = null;
+});
+
+// Alternar entre login e cadastro
+
+document.getElementById("irCadastro").addEventListener("click", function (event) {
+    event.preventDefault();
+
+    document.getElementById("telaLogin").style.display = "none";
+    document.getElementById("telaCadastro").style.display = "flex";
+});
+
+document.getElementById("irLogin").addEventListener("click", function (event) {
+    event.preventDefault();
+
+    document.getElementById("telaCadastro").style.display = "none";
+    document.getElementById("telaLogin").style.display = "flex";
+});
+
+// Cadastro de usuário
+async function cadastrarUsuario() {
+
+    const nome = document.getElementById("nomeCadastro").value.trim();
+    const email = document.getElementById("emailCadastro").value.trim();
+    const senha = document.getElementById("senhaCadastro").value;
+
+    const mensagem = document.getElementById("mensagemCadastro");
+
+    mensagem.textContent = "";
+    if (!nome || !email || !senha) {
+        mensagem.textContent = "Preencha todos os campos.";
+        mensagem.style.color = "#d9534f";
+        return;
+    }
+
+    const { data, error } = await clienteSupabase.auth.signUp({
+        email: email,
+        password: senha,
+        options: {
+            data: {
+                nome: nome
+            }
+        }
+    });
+
+    if (error) {
+        mensagem.textContent = "Erro ao criar conta: " + error.message;
+        mensagem.style.color = "#d9534f";
+        return;
+    }
+
+    mensagem.textContent = "Cadastro realizado! Verifique seu e-mail para confirmar a conta.";
+    mensagem.style.color = "green";
+
+}
+
+document.getElementById("btnCadastrar").addEventListener("click", cadastrarUsuario);
+
+// Login de usuário
+async function entrarUsuario() {
+
+    const email = document.getElementById("emailLogin").value.trim();
+    const senha = document.getElementById("senhaLogin").value;
+
+    const mensagem = document.getElementById("mensagemLogin");
+
+    mensagem.textContent = "";
+
+    if (!email || !senha) {
+        mensagem.textContent = "Informe seu e-mail e sua senha.";
+        mensagem.style.color = "#d9534f";
+        return;
+    }
+
+    const { data, error } = await clienteSupabase.auth.signInWithPassword({
+        email: email,
+        password: senha
+    });
+
+    if (error) {
+        mensagem.textContent = "E-mail ou senha incorretos.";
+        mensagem.style.color = "#d9534f";
+        return;
+    }
+
+    mensagem.textContent = "Login realizado com sucesso!";
+    mensagem.style.color = "green";
+
+    await carregarMaterias();
+
+    document.getElementById("telaLogin").style.display = "none";
+    document.querySelector(".layout").style.display = "flex";
+
+}
+
+document.getElementById("btnEntrar").addEventListener("click", entrarUsuario);
+
+// Verificar sessão ao abrir o site
+async function verificarSessao() {
+
+    const { data, error } = await clienteSupabase.auth.getSession();
+
+    if (error) {
+        console.error("Erro ao verificar sessão:", error);
+        return;
+    }
+
+    if (data.session) {
+        await carregarMaterias();
+
+        document.getElementById("telaLogin").style.display = "none";
+        document.getElementById("telaCadastro").style.display = "none";
+        document.querySelector(".layout").style.display = "flex";
+
+    } else {
+
+        document.getElementById("telaCadastro").style.display = "none";
+        document.getElementById("telaLogin").style.display = "flex";
+        document.querySelector(".layout").style.display = "none";
+
+    }
+}
+
+verificarSessao();
+
+// Abrir e fechar configurações
+
+const btnConfiguracoes = document.getElementById("btnConfiguracoes");
+const opcoesConfiguracoes = document.getElementById("opcoesConfiguracoes");
+const setaConfiguracoes = document.getElementById("setaConfiguracoes");
+
+btnConfiguracoes.addEventListener("click", function () {
+
+    if (opcoesConfiguracoes.style.display === "flex") {
+
+        opcoesConfiguracoes.style.display = "none";
+        setaConfiguracoes.textContent = "⌄";
+
+    } else {
+
+        opcoesConfiguracoes.style.display = "flex";
+        setaConfiguracoes.textContent = "⌃";
+
+    }
+
+});
+
+// Confirmação de logout
+
+const modalSair = document.getElementById("modalSair");
+const cancelarSair = document.getElementById("cancelarSair");
+const confirmarSair = document.getElementById("confirmarSair");
+
+// Abrir confirmação
+document.getElementById("btnSair").addEventListener("click", function () {
+    modalSair.style.display = "flex";
+});
+
+// Cancelar logout
+cancelarSair.addEventListener("click", function () {
+    modalSair.style.display = "none";
+});
+
+// Confirmar logout
+confirmarSair.addEventListener("click", async function () {
+
+    const { error } = await clienteSupabase.auth.signOut();
+
+    if (error) {
+        alert("Não foi possível sair da conta.");
+        return;
+    }
+
+    modalSair.style.display = "none";
+    document.querySelector(".layout").style.display = "none";
+    document.getElementById("telaCadastro").style.display = "none";
+    document.getElementById("telaLogin").style.display = "flex";
+
+});
+
+// Janela Minha Conta
+
+const modalConta = document.getElementById("modalConta");
+const fecharModalConta = document.getElementById("fecharModalConta");
+
+document.getElementById("btnConta").addEventListener("click", async function () {
+
+    modalConta.style.display = "flex";
+
+    const { data, error } = await clienteSupabase.auth.getUser();
+
+    if (error || !data.user) {
+        document.getElementById("nomeUsuarioConta").textContent = "Não disponível";
+        document.getElementById("emailUsuarioConta").textContent = "Não disponível";
+        return;
+    }
+
+    const usuario = data.user;
+
+    document.getElementById("nomeUsuarioConta").textContent =
+        usuario.user_metadata.nome || "Nome não informado";
+
+    document.getElementById("emailUsuarioConta").textContent =
+        usuario.email || "E-mail não disponível";
+
+});
+
+fecharModalConta.addEventListener("click", function () {
+
+    modalConta.style.display = "none";
+
 });
