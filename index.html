@@ -16,6 +16,11 @@
 
 <body>
 
+    <div id="telaCarregamento">
+        <img src="icone.png" alt="Write Study">
+        <h2>Carregando Write Study...</h2>
+    </div>
+
     <div class="tela-login" id="telaLogin">
 
         <div class="card-login">
@@ -64,6 +69,10 @@
 
             <label for="senhaCadastro">Senha</label>
             <input type="password" id="senhaCadastro" placeholder="Crie uma senha">
+
+            <small class="aviso-senha">
+                Crie uma senha exclusiva para acessar o Write Study. Ela não precisa ser a senha do seu e-mail.
+            </small>
 
             <button type="button" id="btnCadastrar">Criar conta</button>
             <p id="mensagemCadastro"></p>
@@ -415,7 +424,7 @@
         <aside class="direita">
             <div class="bloco">
                 <h2 class="importante">Importante</h2>
-                <textarea class="anotacao" placeholder="09/11: Prova..."></textarea>
+                <textarea class="anotacao" id="textoImportante" placeholder="09/11: Prova..."></textarea>
             </div>
 
             <div class="area-configuracoes">
@@ -475,7 +484,32 @@
                     </div>
 
                     <div class="botoes-modal">
+                        <button type="button" id="btnExcluirConta">Excluir minha conta</button>
                         <button type="button" id="fecharModalConta">Fechar</button>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Modal Excluir Conta -->
+
+            <div class="fundo-modal" id="modalExcluirConta">
+
+                <div class="modal">
+
+                    <h2>Excluir minha conta</h2>
+
+                    <p>Essa ação é permanente. Todos os seus dados e arquivos serão excluídos.</p>
+
+                    <label for="senhaExcluirConta">Confirme sua senha:</label>
+                    <input type="password" id="senhaExcluirConta" placeholder="Digite sua senha">
+
+                    <p id="erroExcluirConta"></p>
+
+                    <div class="botoes-modal">
+                        <button type="button" id="cancelarExclusaoConta">Cancelar</button>
+                        <button type="button" id="confirmarExclusaoConta">Excluir conta</button>
                     </div>
 
                 </div>
