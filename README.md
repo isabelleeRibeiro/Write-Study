@@ -104,7 +104,7 @@ O repositório possui uma pasta destinada à documentação do projeto, contendo
 
 ##  Repositório
 
-**GitHub:** [INSERIR LINK DO REPOSITÓRIO]
+**GitHub:** [https://github.com/isabelleeRibeiro/Write-Study]
 
 ---
 
