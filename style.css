@@ -2059,6 +2059,35 @@ body {
     background-color: #fff8ed;
 }
 
+#telaLogin,
+#telaCadastro,
+.layout {
+    display: none;
+}
+
+#telaCarregamento {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff8ed;
+    gap: 15px;
+}
+
+#telaCarregamento img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+}
+
+#telaCarregamento h2 {
+    color: #333;
+    font-size: 22px;
+    font-family: 'Caveat', cursive;
+}
+
 .card-login {
     width: 350px;
     padding: 35px;
@@ -2259,4 +2288,24 @@ body {
 
 #fecharModalConta:active {
     transform: scale(0.97);
+}
+
+#btnExcluirConta,
+#confirmarExclusaoConta {
+    background-color: #e57373;
+    border: none;
+    color: white;
+}
+
+#btnExcluirConta:hover,
+#confirmarExclusaoConta:hover {
+    background-color: #d85d5d;
+}
+
+.aviso-senha {
+    display: block;
+    color: #777;
+    font-size: 12px;
+    margin-top: 5px;
+    line-height: 1.4;
 }
