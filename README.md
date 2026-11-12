@@ -14,7 +14,7 @@ O Write Study surgiu como uma solução para centralizar essas funcionalidades e
 
 Desenvolver um sistema web que permita aos estudantes organizar suas matérias, registrar anotações, gerenciar tarefas, criar exercícios e armazenar conteúdos de estudo, contribuindo para uma rotina acadêmica mais organizada.
 
-## 👥 Integrantes
+##  Integrantes
 
 - Carlos Vinícius de Alcântara Leite
 - Erik Kauan da Silva
