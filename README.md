@@ -54,15 +54,6 @@ Abaixo estão algumas capturas de tela da interface do Write Study.
 ### Área de exercícios
 ![Área de exercícios](capturas/exercicios.png)
 
-##  Instalação e execução
-
-### Pré-requisitos
-
-- Navegador atualizado, como Google Chrome ou Microsoft Edge.
-- Visual Studio Code.
-- Extensão Live Server para executar o projeto localmente.
-- Acesso às configurações do projeto no Supabase.
-
 ## Como acessar o sistema
 
 O Write Study está disponível online pelo GitHub Pages.
