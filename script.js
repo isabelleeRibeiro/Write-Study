@@ -118,6 +118,8 @@ const tituloFormularioExercicio = document.getElementById("tituloFormularioExerc
 const previaArquivoConteudo = document.getElementById("previaArquivoConteudo");
 const removerArquivoConteudo = document.getElementById("removerArquivoConteudo");
 
+const textoImportante = document.getElementById("textoImportante");
+
 let arquivoConteudoAtual = null;
 
 let tarefaParaApagar = null;
@@ -143,6 +145,69 @@ let removerImagemExercicio = false;
 let conteudoParaExcluir = null;
 
 let temporizadorAnotacao;
+let salvandoConteudo = false;
+let salvandoExercicio = false;
+let salvandoTarefa = false;
+let salvandoExclusaoConta = false;
+
+// Carregar texto da caixa Importante
+async function carregarTextoImportante() {
+
+    const { data: dadosUsuario, error: erroUsuario } =
+        await clienteSupabase.auth.getUser();
+
+    if (erroUsuario || !dadosUsuario.user) return;
+
+    const { data, error } = await clienteSupabase
+        .from("importantes")
+        .select("texto")
+        .eq("user_id", dadosUsuario.user.id)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Erro ao carregar texto importante:", error);
+        return;
+    }
+
+    textoImportante.value = data ? data.texto : "";
+}
+
+// Salvar texto da caixa Importante
+async function salvarTextoImportante() {
+
+    const { data: dadosUsuario, error: erroUsuario } =
+        await clienteSupabase.auth.getUser();
+
+    if (erroUsuario || !dadosUsuario.user) return;
+
+    const { error } = await clienteSupabase
+        .from("importantes")
+        .upsert({
+            user_id: dadosUsuario.user.id,
+            texto: textoImportante.value,
+            updated_at: new Date().toISOString()
+        }, {
+            onConflict: "user_id"
+        });
+
+    if (error) {
+        console.error("Erro ao salvar texto importante:", error);
+    }
+}
+
+// Salvamento automático da caixa Importante
+
+let temporizadorImportante;
+
+textoImportante.addEventListener("input", function () {
+
+    clearTimeout(temporizadorImportante);
+
+    temporizadorImportante = setTimeout(function () {
+        salvarTextoImportante();
+    }, 1000);
+
+});
 
 function agendarSalvamentoAnotacao() {
 
@@ -417,215 +482,227 @@ async function validarArquivoReal(arquivo, tipo) {
 
 salvarConteudo.addEventListener("click", async function () {
 
-    const nome = nomeConteudo.value.trim();
-    const descricao = descricaoConteudo.value.trim();
-    const tipo = tipoConteudo.value;
+    if (salvandoConteudo) return;
 
-    if (!nome) {
-        mostrarErroConteudo("Informe o título do conteúdo.");
-        nomeConteudo.focus();
-        return;
-    }
+    salvandoConteudo = true;
+    salvarConteudo.disabled = true;
 
-    if (!tipo) {
-        mostrarErroConteudo("Selecione o tipo de material.");
-        tipoConteudo.focus();
-        return;
-    }
+    try {
 
-    if (
-        (tipo === "pdf" || tipo === "imagem") &&
-        !arquivoConteudo.files[0] &&
-        !(conteudoEmEdicao && conteudoEmEdicao.tipo === tipo && conteudoEmEdicao.arquivo)
-    ) {
-        mostrarErroConteudo("Selecione um arquivo.");
-        arquivoConteudo.focus();
-        return;
-    }
+        const nome = nomeConteudo.value.trim();
+        const descricao = descricaoConteudo.value.trim();
+        const tipo = tipoConteudo.value;
 
-    const arquivoSelecionado = arquivoConteudo.files[0];
-
-    if (arquivoSelecionado) {
-        const arquivoValido = await validarArquivoReal(
-            arquivoSelecionado,
-            tipo
-        );
-
-        if (!arquivoValido) {
-            mostrarErroConteudo(
-                tipo === "pdf"
-                    ? "O arquivo selecionado não é um PDF válido."
-                    : "O arquivo selecionado não é uma imagem válida."
-            );
-
+        if (!nome) {
+            mostrarErroConteudo("Informe o título do conteúdo.");
+            nomeConteudo.focus();
             return;
         }
-    }
 
-    if ((tipo === "youtube" || tipo === "link") && !linkConteudo.value.trim()) {
-        mostrarErroConteudo("Informe o endereço do link.");
-        linkConteudo.focus();
-        return;
-    }
-
-    const novoConteudo = {
-        id: conteudoEmEdicao ? conteudoEmEdicao.id : Date.now(),
-        nome: nome,
-        descricao: descricao,
-        tipo: tipo,
-        arquivo: conteudoEmEdicao && conteudoEmEdicao.tipo === tipo
-            ? conteudoEmEdicao.arquivo
-            : null,
-
-        arquivo_url: conteudoEmEdicao && conteudoEmEdicao.tipo === tipo
-            ? conteudoEmEdicao.arquivo_url
-            : null,
-
-        link: linkConteudo.value.trim()
-    };
-
-    const arquivoAntigo = conteudoEmEdicao
-        ? arquivoAntigoConteudo
-        : null;
-
-    async function concluirSalvamentoConteudo() {
-
-        if (conteudoEmEdicao) {
-
-            const { error } = await clienteSupabase
-                .from("conteudos")
-                .update({
-                    nome: novoConteudo.nome,
-                    descricao: novoConteudo.descricao,
-                    tipo: novoConteudo.tipo,
-                    arquivo_url: novoConteudo.arquivo_url,
-                    link: novoConteudo.link
-                })
-                .eq("id", conteudoEmEdicao.id);
-
-            if (error) {
-                console.error("Erro ao atualizar conteúdo:", error);
-                mostrarErroConteudo("Não foi possível atualizar o conteúdo.");
-                return;
-            }
-
-            const indice = materiaAtual.conteudos.findIndex(function (item) {
-                return item.id === conteudoEmEdicao.id;
-            });
-
-            if (!novoConteudo.arquivo_url) {
-                novoConteudo.arquivo = null;
-            }
-
-            if (indice !== -1) {
-                materiaAtual.conteudos[indice] = novoConteudo;
-            }
-
-            if (
-                arquivoAntigo &&
-                arquivoAntigo !== novoConteudo.arquivo_url
-            ) {
-
-                const { error: erroArquivoAntigo } = await clienteSupabase.storage
-                    .from("arquivos-write-study")
-                    .remove([arquivoAntigo]);
-
-                if (erroArquivoAntigo) {
-                    console.error("Erro ao remover arquivo antigo:", erroArquivoAntigo);
-                }
-
-            }
-
-        } else {
-
-            const { data, error } = await clienteSupabase
-                .from("conteudos")
-                .insert({
-                    materia_id: materiaAtual.dataset.id,
-                    nome: novoConteudo.nome,
-                    descricao: novoConteudo.descricao,
-                    tipo: novoConteudo.tipo,
-                    arquivo_url: novoConteudo.arquivo_url,
-                    link: novoConteudo.link
-                })
-                .select()
-                .single();
-
-            if (error) {
-                console.error("Erro ao salvar conteúdo:", error);
-                mostrarErroConteudo("Não foi possível salvar o conteúdo.");
-                return;
-            }
-
-            novoConteudo.id = data.id;
-            materiaAtual.conteudos.push(novoConteudo);
-
+        if (!tipo) {
+            mostrarErroConteudo("Selecione o tipo de material.");
+            tipoConteudo.focus();
+            return;
         }
 
-        conteudoEmEdicao = null;
+        if (
+            (tipo === "pdf" || tipo === "imagem") &&
+            !arquivoConteudo.files[0] &&
+            !(conteudoEmEdicao && conteudoEmEdicao.tipo === tipo && conteudoEmEdicao.arquivo)
+        ) {
+            mostrarErroConteudo("Selecione um arquivo.");
+            arquivoConteudo.focus();
+            return;
+        }
 
+        const arquivoSelecionado = arquivoConteudo.files[0];
 
-        renderizarConteudos();
+        if (arquivoSelecionado) {
+            const arquivoValido = await validarArquivoReal(
+                arquivoSelecionado,
+                tipo
+            );
 
-        ocultarErroConteudo();
-        formularioConteudo.style.display = "none";
+            if (!arquivoValido) {
+                mostrarErroConteudo(
+                    tipo === "pdf"
+                        ? "O arquivo selecionado não é um PDF válido."
+                        : "O arquivo selecionado não é uma imagem válida."
+                );
 
-        nomeConteudo.value = "";
-        descricaoConteudo.value = "";
-        tipoConteudo.value = "";
-        arquivoConteudo.value = "";
-        linkConteudo.value = "";
+                return;
+            }
+        }
 
-        campoArquivoConteudo.style.display = "none";
-        campoLinkConteudo.style.display = "none";
+        if ((tipo === "youtube" || tipo === "link") && !linkConteudo.value.trim()) {
+            mostrarErroConteudo("Informe o endereço do link.");
+            linkConteudo.focus();
+            return;
+        }
 
-        tituloFormularioConteudo.textContent = "Adicionar conteúdo";
-        salvarConteudo.textContent = "Salvar conteúdo";
+        const novoConteudo = {
+            id: conteudoEmEdicao ? conteudoEmEdicao.id : Date.now(),
+            nome: nome,
+            descricao: descricao,
+            tipo: tipo,
+            arquivo: conteudoEmEdicao && conteudoEmEdicao.tipo === tipo
+                ? conteudoEmEdicao.arquivo
+                : null,
 
-    }
+            arquivo_url: conteudoEmEdicao && conteudoEmEdicao.tipo === tipo
+                ? conteudoEmEdicao.arquivo_url
+                : null,
 
-    if (tipo === "pdf" || tipo === "imagem") {
+            link: linkConteudo.value.trim()
+        };
 
-        const arquivo = arquivoConteudo.files[0];
+        const arquivoAntigo = conteudoEmEdicao
+            ? arquivoAntigoConteudo
+            : null;
 
-        if (arquivo) {
+        async function concluirSalvamentoConteudo() {
 
-            try {
+            if (conteudoEmEdicao) {
 
-                novoConteudo.arquivo_url = await enviarArquivoConteudo(arquivo);
-
-                const { data, error } = await clienteSupabase.storage
-                    .from("arquivos-write-study")
-                    .createSignedUrl(novoConteudo.arquivo_url, 3600);
+                const { error } = await clienteSupabase
+                    .from("conteudos")
+                    .update({
+                        nome: novoConteudo.nome,
+                        descricao: novoConteudo.descricao,
+                        tipo: novoConteudo.tipo,
+                        arquivo_url: novoConteudo.arquivo_url,
+                        link: novoConteudo.link
+                    })
+                    .eq("id", conteudoEmEdicao.id);
 
                 if (error) {
-                    throw error;
+                    console.error("Erro ao atualizar conteúdo:", error);
+                    mostrarErroConteudo("Não foi possível atualizar o conteúdo.");
+                    return;
                 }
 
-                novoConteudo.arquivo = data.signedUrl;
+                const indice = materiaAtual.conteudos.findIndex(function (item) {
+                    return item.id === conteudoEmEdicao.id;
+                });
 
-            } catch (erro) {
+                if (!novoConteudo.arquivo_url) {
+                    novoConteudo.arquivo = null;
+                }
 
-                console.error("Erro ao enviar arquivo:", erro);
-                mostrarErroConteudo("Não foi possível enviar o arquivo.");
-                return;
+                if (indice !== -1) {
+                    materiaAtual.conteudos[indice] = novoConteudo;
+                }
+
+                if (
+                    arquivoAntigo &&
+                    arquivoAntigo !== novoConteudo.arquivo_url
+                ) {
+
+                    const { error: erroArquivoAntigo } = await clienteSupabase.storage
+                        .from("arquivos-write-study")
+                        .remove([arquivoAntigo]);
+
+                    if (erroArquivoAntigo) {
+                        console.error("Erro ao remover arquivo antigo:", erroArquivoAntigo);
+                    }
+
+                }
+
+            } else {
+
+                const { data, error } = await clienteSupabase
+                    .from("conteudos")
+                    .insert({
+                        materia_id: materiaAtual.dataset.id,
+                        nome: novoConteudo.nome,
+                        descricao: novoConteudo.descricao,
+                        tipo: novoConteudo.tipo,
+                        arquivo_url: novoConteudo.arquivo_url,
+                        link: novoConteudo.link
+                    })
+                    .select()
+                    .single();
+
+                if (error) {
+                    console.error("Erro ao salvar conteúdo:", error);
+                    mostrarErroConteudo("Não foi possível salvar o conteúdo.");
+                    return;
+                }
+
+                novoConteudo.id = data.id;
+                materiaAtual.conteudos.push(novoConteudo);
 
             }
 
-            await concluirSalvamentoConteudo();
+            conteudoEmEdicao = null;
 
-        } else {
+
+            renderizarConteudos();
+
+            ocultarErroConteudo();
+            formularioConteudo.style.display = "none";
+
+            nomeConteudo.value = "";
+            descricaoConteudo.value = "";
+            tipoConteudo.value = "";
+            arquivoConteudo.value = "";
+            linkConteudo.value = "";
+
+            campoArquivoConteudo.style.display = "none";
+            campoLinkConteudo.style.display = "none";
+
+            tituloFormularioConteudo.textContent = "Adicionar conteúdo";
+            salvarConteudo.textContent = "Salvar conteúdo";
+
+        }
+
+        if (tipo === "pdf" || tipo === "imagem") {
+
+            const arquivo = arquivoConteudo.files[0];
+
+            if (arquivo) {
+
+                try {
+
+                    novoConteudo.arquivo_url = await enviarArquivoConteudo(arquivo);
+
+                    const { data, error } = await clienteSupabase.storage
+                        .from("arquivos-write-study")
+                        .createSignedUrl(novoConteudo.arquivo_url, 3600);
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    novoConteudo.arquivo = data.signedUrl;
+
+                } catch (erro) {
+
+                    console.error("Erro ao enviar arquivo:", erro);
+                    mostrarErroConteudo("Não foi possível enviar o arquivo.");
+                    return;
+
+                }
+
+                await concluirSalvamentoConteudo();
+
+            } else {
+
+                await concluirSalvamentoConteudo();
+
+            }
+
+        }
+
+        if (tipo === "youtube" || tipo === "link") {
 
             await concluirSalvamentoConteudo();
 
         }
 
-    }
-
-    if (tipo === "youtube" || tipo === "link") {
-
-        await concluirSalvamentoConteudo();
-
+    } finally {
+        salvandoConteudo = false;
+        salvarConteudo.disabled = false;
     }
 
 });
@@ -789,6 +866,22 @@ async function criarMateria(nomeMateria = null, idMateria = null) {
                     }
 
                     nome.textContent = novoNome;
+
+                    areaAnotacoes.style.display = "none";
+                    areaAtividades.style.display = "none";
+                    areaConteudo.style.display = "none";
+                    inicio.style.display = "flex";
+
+                    materiaAtual = null;
+                    anotacaoAtual = null;
+
+                    listaAnotacoes.innerHTML = "";
+                    listaTarefas.innerHTML = "";
+                    listaExercicios.innerHTML = "";
+                    listaConteudos.innerHTML = "";
+
+                    mostrarEditorVazio();
+
                     editor.remove();
                 }
 
@@ -1462,92 +1555,106 @@ cancelarTarefa.addEventListener("click", function () {
 
 
 salvarTarefa.addEventListener("click", async function () {
-    const titulo = tituloTarefa.value.trim();
-    const descricao = descricaoTarefa.value.trim();
-    const prazo = prazoTarefa.value;
 
-    if (titulo === "") {
-        erroTarefa.classList.add("visivel");
-        tituloTarefa.focus();
-        return;
-    }
+    if (salvandoTarefa) return;
 
-    erroTarefa.classList.remove("visivel");
+    salvandoTarefa = true;
+    salvarTarefa.disabled = true;
 
-    if (!materiaAtual) {
-        erroTarefa.textContent = "Selecione uma matéria antes de salvar a tarefa.";
-        erroTarefa.classList.add("visivel");
+    try {
 
-        erroTarefa.scrollIntoView({
-            behavior: "smooth",
-            block: "center"
-        });
+        const titulo = tituloTarefa.value.trim();
+        const descricao = descricaoTarefa.value.trim();
+        const prazo = prazoTarefa.value;
 
-        return;
-    }
-
-    if (tarefaEmEdicao) {
-        // Atualiza a tarefa existente
-        tarefaEmEdicao.titulo = titulo;
-        tarefaEmEdicao.descricao = descricao;
-        tarefaEmEdicao.prazo = prazo;
-
-        const { error } = await clienteSupabase
-            .from("tarefas")
-            .update({
-                titulo: titulo,
-                descricao: descricao,
-                prazo: prazo || null
-            })
-            .eq("id", tarefaEmEdicao.id);
-
-        if (error) {
-            console.error("Erro ao atualizar tarefa:", error);
-            alert("Não foi possível atualizar a tarefa.");
+        if (titulo === "") {
+            erroTarefa.classList.add("visivel");
+            tituloTarefa.focus();
             return;
         }
 
-    } else {
-        // Cria uma nova tarefa no Supabase
-        const { data, error } = await clienteSupabase
-            .from("tarefas")
-            .insert({
-                materia_id: materiaAtual.dataset.id,
+        erroTarefa.classList.remove("visivel");
+
+        if (!materiaAtual) {
+            erroTarefa.textContent = "Selecione uma matéria antes de salvar a tarefa.";
+            erroTarefa.classList.add("visivel");
+
+            erroTarefa.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
+            return;
+        }
+
+        if (tarefaEmEdicao) {
+            // Atualiza a tarefa existente
+            tarefaEmEdicao.titulo = titulo;
+            tarefaEmEdicao.descricao = descricao;
+            tarefaEmEdicao.prazo = prazo;
+
+            const { error } = await clienteSupabase
+                .from("tarefas")
+                .update({
+                    titulo: titulo,
+                    descricao: descricao,
+                    prazo: prazo || null
+                })
+                .eq("id", tarefaEmEdicao.id);
+
+            if (error) {
+                console.error("Erro ao atualizar tarefa:", error);
+                alert("Não foi possível atualizar a tarefa.");
+                return;
+            }
+
+        } else {
+            // Cria uma nova tarefa no Supabase
+            const { data, error } = await clienteSupabase
+                .from("tarefas")
+                .insert({
+                    materia_id: materiaAtual.dataset.id,
+                    titulo: titulo,
+                    descricao: descricao,
+                    prazo: prazo || null,
+                    concluida: false
+                })
+                .select()
+                .single();
+
+            if (error) {
+                console.error("Erro ao salvar tarefa:", error);
+                alert("Não foi possível salvar a tarefa.");
+                return;
+            }
+
+            if (!materiaAtual.tarefas) {
+                materiaAtual.tarefas = [];
+            }
+
+            materiaAtual.tarefas.push({
+                id: data.id,
                 titulo: titulo,
                 descricao: descricao,
-                prazo: prazo || null,
+                prazo: prazo,
                 concluida: false
-            })
-            .select()
-            .single();
-
-        if (error) {
-            console.error("Erro ao salvar tarefa:", error);
-            alert("Não foi possível salvar a tarefa.");
-            return;
+            });
         }
 
-        if (!materiaAtual.tarefas) {
-            materiaAtual.tarefas = [];
-        }
+        tarefaEmEdicao = null;
 
-        materiaAtual.tarefas.push({
-            id: data.id,
-            titulo: titulo,
-            descricao: descricao,
-            prazo: prazo,
-            concluida: false
-        });
+        renderizarTarefas();
+
+        formularioTarefa.style.display = "none";
+        tituloTarefa.value = "";
+        descricaoTarefa.value = "";
+        prazoTarefa.value = "";
+
+
+    } finally {
+        salvandoTarefa = false;
+        salvarTarefa.disabled = false;
     }
-
-    tarefaEmEdicao = null;
-
-    renderizarTarefas();
-
-    formularioTarefa.style.display = "none";
-    tituloTarefa.value = "";
-    descricaoTarefa.value = "";
-    prazoTarefa.value = "";
 });
 
 async function enviarArquivoConteudo(arquivo) {
@@ -1677,15 +1784,20 @@ function renderizarConteudos() {
 
         botaoEditar.addEventListener("click", function () {
 
-            conteudoEmEdicao = conteudo;
+            conteudoEmEdicao = { ...conteudo };
             arquivoAntigoConteudo = conteudo.arquivo_url;
 
             nomeConteudo.value = conteudo.nome;
             descricaoConteudo.value = conteudo.descricao;
             tipoConteudo.value = conteudo.tipo;
+            atualizarSeletorTipoConteudo();
             linkConteudo.value = conteudo.link || "";
 
             arquivoConteudo.value = "";
+            arquivoConteudoAtual = null;
+            previaArquivoConteudo.innerHTML = "";
+            previaArquivoConteudo.style.display = "none";
+            removerArquivoConteudo.style.display = "none";
 
             tituloFormularioConteudo.textContent = "Editar conteúdo";
             salvarConteudo.textContent = "Salvar alterações";
@@ -1697,6 +1809,26 @@ function renderizarConteudos() {
                 (conteudo.tipo === "youtube" || conteudo.tipo === "link") ? "flex" : "none";
 
             formularioConteudo.style.display = "flex";
+
+            if (conteudo.tipo === "imagem" || conteudo.tipo === "pdf") {
+
+                previaArquivoConteudo.innerHTML = "";
+
+                if (conteudo.tipo === "imagem") {
+                    const imagem = document.createElement("img");
+                    imagem.src = conteudo.arquivo;
+                    previaArquivoConteudo.appendChild(imagem);
+                }
+
+                if (conteudo.tipo === "pdf") {
+                    const pdf = document.createElement("iframe");
+                    pdf.src = conteudo.arquivo;
+                    previaArquivoConteudo.appendChild(pdf);
+                }
+
+                previaArquivoConteudo.style.display = "block";
+                removerArquivoConteudo.style.display = "inline-block";
+            }
 
             nomeConteudo.focus();
 
@@ -1749,6 +1881,7 @@ function renderizarConteudos() {
                 window.open(conteudo.link, "_blank");
                 visualizadorCard.style.display = "none";
                 previaConteudo.style.display = "block";
+                botaoVisualizar.style.display = "";
                 return;
             }
 
@@ -2492,204 +2625,219 @@ function renderizarExercicios() {
 
 // Salvar exercício
 document.getElementById("salvarExercicio").addEventListener("click", async function () {
-    const titulo = tituloExercicio.value.trim();
-    const enunciado = enunciadoExercicio.value.trim();
 
-    if (!materiaAtual) {
-        mostrarErroExercicio("Selecione uma matéria antes de salvar o exercício.");
-        return;
-    }
+    if (salvandoExercicio) return;
 
-    function mostrarErroExercicio(mensagem) {
-        erroExercicio.textContent = mensagem;
-        erroExercicio.classList.add("visivel");
+    salvandoExercicio = true;
+    const botaoSalvarExercicio = document.getElementById("salvarExercicio");
+    botaoSalvarExercicio.disabled = true;
 
-        erroExercicio.scrollIntoView({
-            behavior: "smooth",
-            block: "center"
-        });
-    }
+    try {
 
-    if (!titulo && !enunciado) {
-        mostrarErroExercicio("O título e o enunciado da questão são obrigatórios. Preencha os dois campos.");
-        return;
-    }
+        const titulo = tituloExercicio.value.trim();
+        const enunciado = enunciadoExercicio.value.trim();
 
-    if (!titulo) {
-        mostrarErroExercicio("O campo Título é obrigatório. Informe um título para o exercício.");
-        return;
-    }
-
-    if (!enunciado) {
-        mostrarErroExercicio("O campo Enunciado é obrigatório. Digite a pergunta que deseja praticar.");
-        return;
-    }
-
-    if (tipoExercicio.value === "multipla") {
-        const alternativas = Array.from(
-            document.querySelectorAll(".alternativa-exercicio")
-        );
-
-        const preenchidas = alternativas.filter(function (campo) {
-            return campo.value.trim() !== "";
-        });
-
-        const gabaritoSelecionado = document.querySelector(
-            'input[name="gabaritoMultipla"]:checked'
-        );
-
-        const alternativaCorreta = gabaritoSelecionado
-            ? gabaritoSelecionado.closest(".campo-alternativa")
-                .querySelector(".alternativa-exercicio")
-            : null;
-
-        if (preenchidas.length < 2) {
-            mostrarErroExercicio("Preencha pelo menos duas alternativas.");
+        if (!materiaAtual) {
+            mostrarErroExercicio("Selecione uma matéria antes de salvar o exercício.");
             return;
         }
 
-        if (!gabaritoSelecionado || !alternativaCorreta.value.trim()) {
-            mostrarErroExercicio("Marque uma alternativa preenchida como correta.");
+        function mostrarErroExercicio(mensagem) {
+            erroExercicio.textContent = mensagem;
+            erroExercicio.classList.add("visivel");
+
+            erroExercicio.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }
+
+        if (!titulo && !enunciado) {
+            mostrarErroExercicio("O título e o enunciado da questão são obrigatórios. Preencha os dois campos.");
             return;
         }
-    }
 
-    else if (tipoExercicio.value === "verdadeiro-falso") {
-        if (!respostaCorreta.value.trim()) {
-            mostrarErroExercicio("Selecione Verdadeiro ou Falso como resposta correta.");
+        if (!titulo) {
+            mostrarErroExercicio("O campo Título é obrigatório. Informe um título para o exercício.");
             return;
         }
-    }
 
-    else if (tipoExercicio.value === "aberta") {
-        if (!respostaCorreta.value.trim()) {
-            mostrarErroExercicio("Preencha a resposta esperada.");
+        if (!enunciado) {
+            mostrarErroExercicio("O campo Enunciado é obrigatório. Digite a pergunta que deseja praticar.");
             return;
         }
-    }
 
-    erroExercicio.classList.remove("visivel");
-
-    if (!materiaAtual.exercicios) {
-        materiaAtual.exercicios = [];
-    }
-
-    let caminhoImagem = null;
-
-    if (imagemExercicio.files[0]) {
-        try {
-            caminhoImagem = await enviarImagemExercicio(
-                imagemExercicio.files[0]
+        if (tipoExercicio.value === "multipla") {
+            const alternativas = Array.from(
+                document.querySelectorAll(".alternativa-exercicio")
             );
-        } catch (erro) {
-            console.error("Erro ao enviar imagem:", erro);
-            mostrarErroExercicio("Não foi possível enviar a imagem.");
-            return;
+
+            const preenchidas = alternativas.filter(function (campo) {
+                return campo.value.trim() !== "";
+            });
+
+            const gabaritoSelecionado = document.querySelector(
+                'input[name="gabaritoMultipla"]:checked'
+            );
+
+            const alternativaCorreta = gabaritoSelecionado
+                ? gabaritoSelecionado.closest(".campo-alternativa")
+                    .querySelector(".alternativa-exercicio")
+                : null;
+
+            if (preenchidas.length < 2) {
+                mostrarErroExercicio("Preencha pelo menos duas alternativas.");
+                return;
+            }
+
+            if (!gabaritoSelecionado || !alternativaCorreta.value.trim()) {
+                mostrarErroExercicio("Marque uma alternativa preenchida como correta.");
+                return;
+            }
         }
+
+        else if (tipoExercicio.value === "verdadeiro-falso") {
+            if (!respostaCorreta.value.trim()) {
+                mostrarErroExercicio("Selecione Verdadeiro ou Falso como resposta correta.");
+                return;
+            }
+        }
+
+        else if (tipoExercicio.value === "aberta") {
+            if (!respostaCorreta.value.trim()) {
+                mostrarErroExercicio("Preencha a resposta esperada.");
+                return;
+            }
+        }
+
+        erroExercicio.classList.remove("visivel");
+
+        if (!materiaAtual.exercicios) {
+            materiaAtual.exercicios = [];
+        }
+
+        let caminhoImagem = null;
+
+        if (imagemExercicio.files[0]) {
+            try {
+                caminhoImagem = await enviarImagemExercicio(
+                    imagemExercicio.files[0]
+                );
+            } catch (erro) {
+                console.error("Erro ao enviar imagem:", erro);
+                mostrarErroExercicio("Não foi possível enviar a imagem.");
+                return;
+            }
+        }
+
+        const novoExercicio = {
+            titulo: titulo,
+            enunciado: enunciado,
+            tipo: tipoExercicio.value,
+
+            resposta: tipoExercicio.value === "multipla"
+                ? document.querySelector('input[name="gabaritoMultipla"]:checked').value
+                : respostaCorreta.value.trim(),
+
+            alternativas: Array.from(
+                document.querySelectorAll(".alternativa-exercicio")
+            ).map(function (campo) {
+                return campo.value.trim();
+            }),
+
+            imagem: imagemExercicioAtual,
+            imagem_url: caminhoImagem
+        };
+
+        if (exercicioEmEdicao) {
+            const indice = materiaAtual.exercicios.indexOf(exercicioEmEdicao);
+            if (!caminhoImagem && !removerImagemExercicio) {
+                novoExercicio.imagem_url = exercicioEmEdicao.imagem_url;
+            }
+
+            if (!imagemExercicioAtual && !removerImagemExercicio) {
+                novoExercicio.imagem = exercicioEmEdicao.imagem;
+            }
+
+            const { error } = await clienteSupabase
+                .from("exercicios")
+                .update({
+                    titulo: novoExercicio.titulo,
+                    enunciado: novoExercicio.enunciado,
+                    tipo: novoExercicio.tipo,
+                    resposta: novoExercicio.resposta,
+                    alternativas: novoExercicio.alternativas,
+                    imagem_url: novoExercicio.imagem_url
+                })
+                .eq("id", exercicioEmEdicao.id);
+
+            if (error) {
+                console.error("Erro ao atualizar exercício:", error);
+                mostrarErroExercicio("Não foi possível atualizar o exercício.");
+                return;
+            }
+
+            materiaAtual.exercicios[indice] = novoExercicio;
+
+            exercicioEmEdicao = null;
+        } else {
+
+            const { data, error } = await clienteSupabase
+                .from("exercicios")
+                .insert({
+                    materia_id: materiaAtual.dataset.id,
+                    titulo: novoExercicio.titulo,
+                    enunciado: novoExercicio.enunciado,
+                    tipo: novoExercicio.tipo,
+                    resposta: novoExercicio.resposta,
+                    alternativas: novoExercicio.alternativas,
+                    imagem_url: novoExercicio.imagem_url
+                })
+                .select()
+                .single();
+
+            if (error) {
+                console.error("Erro ao salvar exercício:", error);
+                mostrarErroExercicio("Não foi possível salvar o exercício.");
+                return;
+            }
+
+            novoExercicio.id = data.id;
+            materiaAtual.exercicios.push(novoExercicio);
+        }
+
+        renderizarExercicios();
+
+        formularioExercicio.style.display = "none";
+        tituloExercicio.value = "";
+        enunciadoExercicio.value = "";
+        tipoExercicio.value = "multipla";
+        tipoExercicio.dispatchEvent(new Event("change"));
+
+        document.querySelectorAll('input[name="gabaritoMultipla"]').forEach(function (radio) {
+            radio.checked = false;
+        });
+
+        document.querySelectorAll(".opcao-vf").forEach(function (botao) {
+            botao.classList.remove("selecionado");
+        });
+
+
+        respostaCorreta.value = "";
+        imagemExercicio.value = "";
+        previaImagemExercicio.innerHTML = "";
+        imagemExercicioAtual = null;
+        document.querySelectorAll(".alternativa-exercicio").forEach(function (campo) {
+            campo.value = "";
+        });
+
+        erroExercicio.classList.remove("visivel");
+
+    } finally {
+        salvandoExercicio = false;
+        botaoSalvarExercicio.disabled = false;
     }
 
-    const novoExercicio = {
-        titulo: titulo,
-        enunciado: enunciado,
-        tipo: tipoExercicio.value,
-
-        resposta: tipoExercicio.value === "multipla"
-            ? document.querySelector('input[name="gabaritoMultipla"]:checked').value
-            : respostaCorreta.value.trim(),
-
-        alternativas: Array.from(
-            document.querySelectorAll(".alternativa-exercicio")
-        ).map(function (campo) {
-            return campo.value.trim();
-        }),
-
-        imagem: imagemExercicioAtual,
-        imagem_url: caminhoImagem
-    };
-
-    if (exercicioEmEdicao) {
-        const indice = materiaAtual.exercicios.indexOf(exercicioEmEdicao);
-        if (!caminhoImagem && !removerImagemExercicio) {
-            novoExercicio.imagem_url = exercicioEmEdicao.imagem_url;
-        }
-
-        if (!imagemExercicioAtual && !removerImagemExercicio) {
-            novoExercicio.imagem = exercicioEmEdicao.imagem;
-        }
-
-        const { error } = await clienteSupabase
-            .from("exercicios")
-            .update({
-                titulo: novoExercicio.titulo,
-                enunciado: novoExercicio.enunciado,
-                tipo: novoExercicio.tipo,
-                resposta: novoExercicio.resposta,
-                alternativas: novoExercicio.alternativas,
-                imagem_url: novoExercicio.imagem_url
-            })
-            .eq("id", exercicioEmEdicao.id);
-
-        if (error) {
-            console.error("Erro ao atualizar exercício:", error);
-            mostrarErroExercicio("Não foi possível atualizar o exercício.");
-            return;
-        }
-
-        materiaAtual.exercicios[indice] = novoExercicio;
-
-        exercicioEmEdicao = null;
-    } else {
-
-        const { data, error } = await clienteSupabase
-            .from("exercicios")
-            .insert({
-                materia_id: materiaAtual.dataset.id,
-                titulo: novoExercicio.titulo,
-                enunciado: novoExercicio.enunciado,
-                tipo: novoExercicio.tipo,
-                resposta: novoExercicio.resposta,
-                alternativas: novoExercicio.alternativas,
-                imagem_url: novoExercicio.imagem_url
-            })
-            .select()
-            .single();
-
-        if (error) {
-            console.error("Erro ao salvar exercício:", error);
-            mostrarErroExercicio("Não foi possível salvar o exercício.");
-            return;
-        }
-
-        novoExercicio.id = data.id;
-        materiaAtual.exercicios.push(novoExercicio);
-    }
-
-    renderizarExercicios();
-
-    formularioExercicio.style.display = "none";
-    tituloExercicio.value = "";
-    enunciadoExercicio.value = "";
-    tipoExercicio.value = "multipla";
-    tipoExercicio.dispatchEvent(new Event("change"));
-
-    document.querySelectorAll('input[name="gabaritoMultipla"]').forEach(function (radio) {
-        radio.checked = false;
-    });
-
-    document.querySelectorAll(".opcao-vf").forEach(function (botao) {
-        botao.classList.remove("selecionado");
-    });
-
-
-    respostaCorreta.value = "";
-    imagemExercicio.value = "";
-    previaImagemExercicio.innerHTML = "";
-    imagemExercicioAtual = null;
-    document.querySelectorAll(".alternativa-exercicio").forEach(function (campo) {
-        campo.value = "";
-    });
-
-    erroExercicio.classList.remove("visivel");
 });
 
 // SELETOR PERSONALIZADO - TIPO DE QUESTÃO
@@ -2857,7 +3005,20 @@ async function cadastrarUsuario() {
     });
 
     if (error) {
-        mensagem.textContent = "Erro ao criar conta: " + error.message;
+
+        let textoErro = "Não foi possível criar sua conta. Tente novamente.";
+
+        if (error.message.includes("Password should be at least 6 characters")) {
+            textoErro = "A senha precisa ter pelo menos 6 caracteres.";
+        }
+        else if (error.message.includes("Invalid email")) {
+            textoErro = "Digite um endereço de e-mail válido.";
+        }
+        else if (error.message.includes("User already registered")) {
+            textoErro = "Este e-mail já possui uma conta cadastrada.";
+        }
+
+        mensagem.textContent = textoErro;
         mensagem.style.color = "#d9534f";
         return;
     }
@@ -2900,6 +3061,7 @@ async function entrarUsuario() {
     mensagem.style.color = "green";
 
     await carregarMaterias();
+    await carregarTextoImportante();
 
     document.getElementById("telaLogin").style.display = "none";
     document.querySelector(".layout").style.display = "flex";
@@ -2915,11 +3077,18 @@ async function verificarSessao() {
 
     if (error) {
         console.error("Erro ao verificar sessão:", error);
+
+        document.getElementById("telaCarregamento").style.display = "none";
+        document.getElementById("telaCadastro").style.display = "none";
+        document.getElementById("telaLogin").style.display = "flex";
+
         return;
     }
 
     if (data.session) {
         await carregarMaterias();
+        await carregarTextoImportante();
+        document.getElementById("telaCarregamento").style.display = "none";
 
         document.getElementById("telaLogin").style.display = "none";
         document.getElementById("telaCadastro").style.display = "none";
@@ -2927,6 +3096,7 @@ async function verificarSessao() {
 
     } else {
 
+        document.getElementById("telaCarregamento").style.display = "none";
         document.getElementById("telaCadastro").style.display = "none";
         document.getElementById("telaLogin").style.display = "flex";
         document.querySelector(".layout").style.display = "none";
@@ -2995,6 +3165,12 @@ confirmarSair.addEventListener("click", async function () {
 
 const modalConta = document.getElementById("modalConta");
 const fecharModalConta = document.getElementById("fecharModalConta");
+const btnExcluirConta = document.getElementById("btnExcluirConta");
+const modalExcluirConta = document.getElementById("modalExcluirConta");
+const senhaExcluirConta = document.getElementById("senhaExcluirConta");
+const erroExcluirConta = document.getElementById("erroExcluirConta");
+const cancelarExclusaoConta = document.getElementById("cancelarExclusaoConta");
+const confirmarExclusaoConta = document.getElementById("confirmarExclusaoConta");
 
 document.getElementById("btnConta").addEventListener("click", async function () {
 
@@ -3021,5 +3197,112 @@ document.getElementById("btnConta").addEventListener("click", async function () 
 fecharModalConta.addEventListener("click", function () {
 
     modalConta.style.display = "none";
+
+});
+
+btnExcluirConta.addEventListener("click", function () {
+
+    modalConta.style.display = "none";
+    modalExcluirConta.style.display = "flex";
+
+    senhaExcluirConta.value = "";
+    erroExcluirConta.textContent = "";
+
+});
+
+cancelarExclusaoConta.addEventListener("click", function () {
+
+    modalExcluirConta.style.display = "none";
+    senhaExcluirConta.value = "";
+    erroExcluirConta.textContent = "";
+
+});
+
+senhaExcluirConta.addEventListener("input", function () {
+
+    erroExcluirConta.textContent = "";
+
+});
+
+confirmarExclusaoConta.addEventListener("click", async function () {
+
+    if (salvandoExclusaoConta) return;
+
+    salvandoExclusaoConta = true;
+    confirmarExclusaoConta.disabled = true;
+    cancelarExclusaoConta.disabled = true;
+
+
+    try {
+
+        const senha = senhaExcluirConta.value;
+        erroExcluirConta.textContent = "";
+
+        if (!senha) {
+            erroExcluirConta.textContent = "Digite sua senha para continuar.";
+            senhaExcluirConta.focus();
+            return;
+        }
+        let resultado;
+
+        try {
+            resultado = await clienteSupabase.functions.invoke("delete-account", {
+                body: {
+                    password: senha
+                }
+            });
+        } catch (erro) {
+            console.error("Erro ao chamar a função:", erro);
+            erroExcluirConta.textContent =
+                "Não foi possível conectar ao servidor. Tente novamente.";
+            return;
+        }
+
+        const { error } = resultado;
+
+        if (error) {
+
+            let mensagem = "Não foi possível excluir sua conta. Tente novamente.";
+
+            try {
+                const resposta = error.context instanceof Response
+                    ? await error.context.json()
+                    : null;
+
+                if (resposta.error) {
+                    mensagem = resposta.error;
+                }
+            } catch {
+                // Mantém a mensagem padrão.
+            }
+
+            erroExcluirConta.textContent = mensagem;
+            return;
+        }
+
+        const { error: erroSaida } = await clienteSupabase.auth.signOut({
+            scope: "local"
+        });
+
+        if (erroSaida) {
+            console.error("Erro ao encerrar sessão:", erroSaida);
+        }
+
+        modalExcluirConta.style.display = "none";
+        senhaExcluirConta.value = "";
+
+        document.querySelector(".layout").style.display = "none";
+        document.getElementById("telaCadastro").style.display = "none";
+        document.getElementById("telaLogin").style.display = "flex";
+
+        document.getElementById("mensagemLogin").textContent =
+            "Sua conta foi excluída com sucesso.";
+        document.getElementById("mensagemLogin").style.color = "#2e9d50";
+
+    } finally {
+        salvandoExclusaoConta = false;
+        confirmarExclusaoConta.disabled = false;
+        cancelarExclusaoConta.disabled = false;
+    }
 
 });
