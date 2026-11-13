@@ -2998,6 +2998,7 @@ async function cadastrarUsuario() {
         email: email,
         password: senha,
         options: {
+            emailRedirectTo: "https://isabelleeribeiro.github.io/Write-Study/",
             data: {
                 nome: nome
             }
@@ -3005,6 +3006,8 @@ async function cadastrarUsuario() {
     });
 
     if (error) {
+        console.error("Erro ao cadastrar usuário:", error);
+        console.error("Mensagem:", error.message);
 
         let textoErro = "Não foi possível criar sua conta. Tente novamente.";
 
